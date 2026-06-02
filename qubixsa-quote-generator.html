@@ -269,6 +269,51 @@
       .detailed-terms-list>li{padding:3px 0 !important;break-inside:avoid}
       @page{size:A4 portrait;margin:8mm}
     }
+
+    /* Drag & Drop Upload Zone */
+    .drop-zone {
+      border: 2px dashed var(--color-border);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      background: var(--color-surface-2);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--color-primary) !important;
+      background: #fff8f6 !important;
+    }
+    
+    /* Catalog Drawer */
+    .catalog-drawer {
+      position: fixed;
+      top: 0;
+      right: -360px;
+      width: 340px;
+      height: 100vh;
+      background: #fff;
+      box-shadow: -8px 0 32px rgba(31,26,19,0.15);
+      z-index: 1000;
+      transition: right 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--color-border);
+    }
+    .catalog-drawer.open { right: 0; }
+    .catalog-header { padding: var(--space-4); background: var(--color-primary); color: #fff; display: flex; justify-content: space-between; align-items: center; }
+    .catalog-close { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; line-height: 1; }
+    .catalog-body { padding: var(--space-4); overflow-y: auto; flex: 1; }
+    .catalog-section-title { font-size: var(--text-xs); font-weight: 800; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-top: var(--space-4); margin-bottom: var(--space-2); border-bottom: 1px dashed rgba(232,76,43,0.15); padding-bottom: 4px; }
+    .catalog-item-card { padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s ease; text-align: right; }
+    .catalog-item-card:hover { border-color: var(--color-primary); background: #fff8f6; transform: translateY(-1px); }
+    .catalog-item-code { font-size: var(--text-xs); font-weight: 800; color: var(--color-primary); text-align: left; }
+    .catalog-item-desc { font-size: 0.75rem; color: #52493f; margin-top: 4px; line-height: 1.4; direction: rtl; }
+    .catalog-item-meta { display: flex; justify-content: space-between; margin-top: 6px; font-size: var(--text-xs); font-weight: 700; color: #8d847a; }
+    
+    /* Red button */
+    .btn-danger { background: #fff8f6; border: 1px solid #fda29b; color: #b42318; }
+    .btn-danger:hover { background: #fee4e2; }
   </style>
 </head>
 <body>
@@ -337,6 +382,18 @@
                 <input type="checkbox" id="compareQuoteCheckbox" style="width:16px; height:16px; accent-color:var(--color-primary);" />
                 <span>Enable Option A/B Comparison Quote</span>
               </label>
+            </div>
+            <div class="field" style="grid-column:1 / -1; border-top:1px solid var(--color-border); padding-top:12px; margin-top:8px;">
+              <label style="font-weight:800; font-size:var(--text-xs); color:var(--color-primary); text-transform:uppercase; letter-spacing:0.05em;">Drafts & Saved History</label>
+              <div style="display:flex; gap:0.4rem; margin-top:6px;">
+                <button class="btn btn-secondary" type="button" id="saveHistoryBtn" style="flex:1; font-size:var(--text-xs); padding:0.5rem 0.75rem; font-weight:800; height:34px;">Save to history</button>
+                <button class="btn btn-secondary btn-danger" type="button" id="clearHistoryBtn" style="font-size:var(--text-xs); padding:0.5rem 0.75rem; font-weight:800; height:34px;">Clear history</button>
+              </div>
+              <div style="margin-top:8px;">
+                <select class="select" id="historySelect" style="font-size:var(--text-xs); height:34px; padding:0 8px; font-weight:700; color:var(--color-text);">
+                  <option value="">-- Load from saved history --</option>
+                </select>
+              </div>
             </div>
           </div>
         </section>
@@ -498,8 +555,16 @@
             </div>
             <div class="field"><label for="swift">SWIFT</label><input class="input" id="swift" value="NCBKSAJE" /></div>
             <div class="field internal-notes no-print"><label for="internalNotes">Internal notes (not printed)</label><textarea class="textarea" id="internalNotes" placeholder="Delivery notes, margin, follow-up…"></textarea></div>
-            <div class="field"><label for="productImages">Product images (optional)</label><input class="input" id="productImages" type="file" accept="image/*" multiple /></div>
-            <div id="productImagePreview" class="grid grid-2"></div>
+            <div class="field">
+              <label>Product images (optional)</label>
+              <div id="dropZone" class="drop-zone no-print" style="margin-top: 4px;">
+                <div style="font-size: 1.5rem; margin-bottom: 6px;">📸</div>
+                <div style="font-size: var(--text-sm); font-weight: 800; color: #4a433b;">Drag & drop product images here</div>
+                <div style="font-size: var(--text-xs); color: #8d847a; margin-top: 4px;">or click to browse from computer (Max 3)</div>
+                <input id="productImages" type="file" accept="image/*" multiple style="display: none;" />
+              </div>
+            </div>
+            <div id="productImagePreview" class="grid grid-2" style="margin-top: 10px; gap: 10px;"></div>
           </div>
         </section>
 
@@ -534,10 +599,17 @@
             <h2 style="font-size:var(--text-lg);font-weight:800;">Live quote preview</h2>
             <p class="helper">This is exactly what prints to PDF — full A4 width.</p>
           </div>
-          <div class="preview-badges">
-            <span class="badge">RTL ready</span>
-            <span class="badge">Print optimized</span>
-            <span class="badge">Dynamic totals</span>
+          <div style="display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap;">
+            <div class="preview-badges">
+              <span class="badge">RTL ready</span>
+              <span class="badge">Print optimized</span>
+              <span class="badge">Dynamic totals</span>
+            </div>
+            <div class="zoom-controls no-print" style="display:inline-flex; align-items:center; gap:0.5rem; background:#fff; padding:6px 12px; border-radius:999px; border:1px solid var(--color-border); box-shadow:var(--shadow-sm);">
+              <span style="font-size:var(--text-xs); font-weight:800; color:#514840;">Zoom</span>
+              <input type="range" id="previewZoom" min="0.5" max="1" step="0.05" value="1" style="width:70px; accent-color:var(--color-primary); cursor:pointer;" />
+              <span id="zoomVal" style="font-size:var(--text-xs); font-weight:700; width:30px; text-align:right;">100%</span>
+            </div>
           </div>
         </div>
         <div class="preview-frame">
@@ -836,7 +908,8 @@
       draft: 'qubixsa-quote-draft',
       seq: 'qubixsa-quote-seq',
       clients: 'qubixsa-clients',
-      style: 'qubixsa-product-style'
+      style: 'qubixsa-product-style',
+      history: 'qubixsa-quote-history'
     };
 
     const ITEM_TEMPLATES = {
@@ -1240,6 +1313,122 @@
       saveTimer = setTimeout(saveDraft, 500);
     }
 
+    function updatePageBreakIndicators() {
+      // Clear any existing indicators
+      document.querySelectorAll('.page-break-indicator').forEach(el => el.remove());
+      
+      const quotePreview = document.getElementById('quotePreview');
+      if (!quotePreview) return;
+      
+      // Printable A4 height with 8mm top/bottom page margins:
+      // 297mm - 16mm = 281mm = 28.1cm of height content fits on each page.
+      // At standard 96 DPI: 1cm = 37.795px
+      const cmToPx = 37.795;
+      const pageHeightPx = 28.1 * cmToPx;
+      
+      const contentHeight = quotePreview.scrollHeight;
+      const totalPages = Math.ceil(contentHeight / pageHeightPx);
+      
+      // Add a line for each page split
+      for (let i = 1; i < totalPages; i++) {
+        const topPx = i * pageHeightPx;
+        
+        const indicator = document.createElement('div');
+        indicator.className = 'page-break-indicator no-print';
+        indicator.style.cssText = `
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: ${topPx}px;
+          border-top: 2px dashed rgba(232, 76, 43, 0.45);
+          z-index: 100;
+          pointer-events: none;
+          display: flex;
+          justify-content: flex-end;
+          direction: ltr;
+        `;
+        
+        const label = document.createElement('span');
+        label.style.cssText = `
+          background: rgba(232, 76, 43, 0.9);
+          color: #fff;
+          font-size: 9px;
+          font-weight: 800;
+          padding: 2px 6px;
+          border-radius: 4px;
+          margin-top: -8px;
+          margin-inline-end: 20px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        `;
+        label.textContent = `نهاية الصفحة ${i} / Page ${i} Limit`;
+        
+        indicator.appendChild(label);
+        quotePreview.appendChild(indicator);
+      }
+    }
+
+    function getHistoryList() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE.history) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+    
+    function populateHistoryDropdown() {
+      const select = document.getElementById('historySelect');
+      if (!select) return;
+      const history = getHistoryList();
+      select.innerHTML = '<option value="">-- Load from saved history --</option>' + 
+        history.map((q, idx) => {
+          const totalStr = q.grandTotal ? ` | ${formatMoney(q.grandTotal)} ${q.currency || 'SAR'}` : '';
+          return `<option value="${idx}">${q.quoteNumber || 'No ID'} - ${q.clientName || 'Unknown Client'}${totalStr}</option>`;
+        }).join('');
+    }
+    
+    function saveToHistory() {
+      const state = getFormState();
+      const quoteNumber = refs.quoteNumber.value.trim() || 'No ID';
+      const clientName = refs.clientName.value.trim() || 'Unknown Client';
+      const isCompare = document.getElementById('compareQuoteCheckbox').checked;
+      
+      const itemsA = collectItems();
+      const totalsA = calcTotals(itemsA, state.data);
+      let grandTotal = totalsA.grand;
+      
+      if (isCompare) {
+        const itemsB = collectItemsB();
+        const totalsB = calcTotals(itemsB, state.data);
+        grandTotal = Math.max(totalsA.grand, totalsB.grand);
+      }
+      
+      const historyItem = {
+        quoteNumber,
+        clientName,
+        grandTotal,
+        currency: state.data.currency || 'SAR',
+        state,
+        timestamp: Date.now()
+      };
+      
+      let history = getHistoryList();
+      history = history.filter(q => q.quoteNumber !== quoteNumber);
+      history.unshift(historyItem);
+      history = history.slice(0, 20);
+      
+      localStorage.setItem(STORAGE.history, JSON.stringify(history));
+      populateHistoryDropdown();
+      showToast('Saved to history');
+    }
+    
+    function clearHistory() {
+      if (confirm('Are you sure you want to clear all history? This cannot be undone.')) {
+        localStorage.removeItem(STORAGE.history);
+        populateHistoryDropdown();
+        showToast('History cleared');
+      }
+    }
+
     function applyPresetSections(style, resetFields) {
       const showLedSpecs = style === 'led';
       els.toggleSpecs.checked = showLedSpecs || style === 'lcd';
@@ -1362,6 +1551,19 @@
         setStatus(v.ok ? 'Ready to print' : 'Complete checklist to print');
       }
       
+      const zoomInput = document.getElementById('previewZoom');
+      if (zoomInput) {
+        const val = parseFloat(zoomInput.value);
+        const quotePreview = document.getElementById('quotePreview');
+        const frame = quotePreview.parentElement;
+        if (frame && val < 1) {
+          frame.style.height = `${quotePreview.offsetHeight * val + 40}px`;
+        } else if (frame) {
+          frame.style.height = '';
+        }
+      }
+      
+      updatePageBreakIndicators();
       scheduleSave();
     }
 
@@ -1742,6 +1944,104 @@ ${issuerName}
       Object.values(refs).forEach(el => el && el.addEventListener('input', updateAll));
       Object.values(refs).forEach(el => el && el.addEventListener('change', updateAll));
 
+      // Zoom Input Event Listener
+      const zoomInput = document.getElementById('previewZoom');
+      const zoomVal = document.getElementById('zoomVal');
+      const quotePreview = document.getElementById('quotePreview');
+      if (zoomInput) {
+        zoomInput.addEventListener('input', e => {
+          const val = e.target.value;
+          zoomVal.textContent = Math.round(val * 100) + '%';
+          quotePreview.style.transform = `scale(${val})`;
+          quotePreview.style.transformOrigin = 'top center';
+          
+          const frame = quotePreview.parentElement;
+          if (frame) {
+            frame.style.height = `${quotePreview.offsetHeight * val + 40}px`;
+          }
+        });
+      }
+
+      // Drag and Drop Event Listeners for Images
+      const dropZone = document.getElementById('dropZone');
+      if (dropZone) {
+        dropZone.addEventListener('dragover', e => {
+          e.preventDefault();
+          dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => {
+          dropZone.classList.remove('dragover');
+        });
+        dropZone.addEventListener('drop', e => {
+          e.preventDefault();
+          dropZone.classList.remove('dragover');
+          if (e.dataTransfer.files && e.dataTransfer.files.length) {
+            renderProductImagePreview(e.dataTransfer.files);
+          }
+        });
+      }
+
+      // Catalog Drawer Toggle & Click Event Listeners
+      const catalogToggleBtn = document.getElementById('catalogToggleBtn');
+      const catalogDrawer = document.getElementById('catalogDrawer');
+      const closeCatalogDrawer = document.getElementById('closeCatalogDrawer');
+      
+      if (catalogToggleBtn && catalogDrawer) {
+        catalogToggleBtn.addEventListener('click', () => {
+          catalogDrawer.classList.toggle('open');
+        });
+      }
+      if (closeCatalogDrawer && catalogDrawer) {
+        closeCatalogDrawer.addEventListener('click', () => {
+          catalogDrawer.classList.remove('open');
+        });
+      }
+      
+      document.querySelectorAll('.catalog-item-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const code = card.dataset.code;
+          const unit = card.dataset.unit;
+          const price = parseFloat(card.dataset.price);
+          const desc = card.dataset.desc;
+          
+          const isCompare = document.getElementById('compareQuoteCheckbox').checked;
+          let targetContainer = els.itemsContainer;
+          
+          if (isCompare) {
+            const addB = confirm(`Add to Option B?\n\nOK = Add to Option B (الخيار ب)\nCancel = Add to Option A (الخيار أ)`);
+            if (addB) {
+              targetContainer = document.getElementById('itemsContainerB');
+            }
+          }
+          
+          addItem({ code, unit, qty: 1, price, desc }, targetContainer);
+          showToast(`Preset ${code} added!`);
+        });
+      });
+
+      // History event listeners & initial populating
+      populateHistoryDropdown();
+      document.getElementById('saveHistoryBtn').addEventListener('click', saveToHistory);
+      document.getElementById('clearHistoryBtn').addEventListener('click', clearHistory);
+      document.getElementById('historySelect').addEventListener('change', e => {
+        const idx = e.target.value;
+        if (idx === '') return;
+        const history = getHistoryList();
+        const item = history[parseInt(idx, 10)];
+        if (item && item.state) {
+          if (confirm(`Load quote draft: ${item.quoteNumber}? Current form values will be overwritten.`)) {
+            els.itemsContainer.innerHTML = '';
+            const containerB = document.getElementById('itemsContainerB');
+            if (containerB) containerB.innerHTML = '';
+            
+            setFormState(item.state);
+            updateAll();
+            showToast(`Loaded ${item.quoteNumber}`);
+          }
+        }
+        e.target.value = '';
+      });
+
       const draft = localStorage.getItem(STORAGE.draft);
       const savedStyle = localStorage.getItem(STORAGE.style) || 'led';
       if (draft && confirm('Resume your last saved draft?')) {
@@ -1806,7 +2106,98 @@ ${issuerName}
           <button class="btn btn-primary" id="processCsvBtn" type="button">Import Items</button>
         </div>
       </div>
+  </div>
+
+  <!-- Catalog Drawer Presets slide-out panel -->
+  <div id="catalogDrawer" class="catalog-drawer no-print">
+    <div class="catalog-header">
+      <h3 style="margin:0; font-size:var(--text-sm); font-weight:800; display:flex; align-items:center; gap:0.5rem;">
+        <span>📦</span> Product Catalog Presets
+      </h3>
+      <button class="catalog-close" id="closeCatalogDrawer" type="button">&times;</button>
+    </div>
+    <div class="catalog-body">
+      <p class="helper" style="margin-top:0;">Click any item below to add it directly to Option A or Option B tables.</p>
+      
+      <div class="catalog-section-title">شاشات LED (LED Displays)</div>
+      <div class="catalog-item-card" data-code="P1.5-IN" data-unit="م²" data-price="4500" data-desc="شاشة LED داخلية عالي الدقة (Pixel Pitch 1.56mm) — دقة عالية وزاوية رؤية واسعة للصالات والاجتماعات">
+        <div class="catalog-item-code">P1.5-IN</div>
+        <div class="catalog-item-desc">شاشة LED داخلية عالي الدقة P1.56</div>
+        <div class="catalog-item-meta"><span>4,500.00 ر.س</span><span>لكل م²</span></div>
+      </div>
+      <div class="catalog-item-card" data-code="P1.8-IN" data-unit="م²" data-price="3500" data-desc="شاشة LED داخلية عالي الدقة (Pixel Pitch 1.86mm) — سطوع مثالي وعمر افتراضي طويل للشركات والمعارض">
+        <div class="catalog-item-code">P1.8-IN</div>
+        <div class="catalog-item-desc">شاشة LED داخلية عالي الدقة P1.86</div>
+        <div class="catalog-item-meta"><span>3,500.00 ر.س</span><span>لكل م²</span></div>
+      </div>
+      <div class="catalog-item-card" data-code="P2.5-IN" data-unit="م²" data-price="2200" data-desc="شاشة LED داخلية (Pixel Pitch 2.5mm) — الفئة الأكثر انتشاراً وطلباً بفضل التوازن بين السعر والدقة">
+        <div class="catalog-item-code">P2.5-IN</div>
+        <div class="catalog-item-desc">شاشة LED داخلية P2.5</div>
+        <div class="catalog-item-meta"><span>2,200.00 ر.س</span><span>لكل م²</span></div>
+      </div>
+      <div class="catalog-item-card" data-code="P2.9-OUT" data-unit="م²" data-price="3800" data-desc="شاشة LED خارجية مقاومة للعوامل الجوية والغبار (Pixel Pitch 2.9mm) — سطوع فائق ووضوح ممتاز تحت أشعة الشمس">
+        <div class="catalog-item-code">P2.9-OUT</div>
+        <div class="catalog-item-desc">شاشة LED خارجية P2.977</div>
+        <div class="catalog-item-meta"><span>3,800.00 ر.س</span><span>لكل م²</span></div>
+      </div>
+      <div class="catalog-item-card" data-code="P3.9-OUT" data-unit="م²" data-price="3200" data-desc="شاشة LED خارجية مقاومة للعوامل الجوية (Pixel Pitch 3.91mm) — مثالية للوحات الإعلانية الخارجية والواجهات">
+        <div class="catalog-item-code">P3.9-OUT</div>
+        <div class="catalog-item-desc">شاشة LED خارجية P3.91</div>
+        <div class="catalog-item-meta"><span>3,200.00 ر.س</span><span>لكل م²</span></div>
+      </div>
+
+      <div class="catalog-section-title">معالجات وأنظمة تحكم (Processors)</div>
+      <div class="catalog-item-card" data-code="VP-NVS" data-unit="جهاز" data-price="5000" data-desc="معالج فيديو متكامل Novastar يدعم مدخلات HDMI / DVI / SDI / DP مع معالجة الصورة بشكل مباشر وسلس">
+        <div class="catalog-item-code">VP-NVS</div>
+        <div class="catalog-item-desc">معالج فيديو Novastar HDMI/DVI/SDI/DP</div>
+        <div class="catalog-item-meta"><span>5,000.00 ر.س</span><span>لكل جهاز</span></div>
+      </div>
+      <div class="catalog-item-card" data-code="CTRL-TB60" data-unit="جهاز" data-price="2800" data-desc="مشغل وسائط متعددة Novastar Taurus TB60 — يدعم التشغيل السحابي والتحكم اللاسلكي والجدولة الذكية">
+        <div class="catalog-item-code">CTRL-TB60</div>
+        <div class="catalog-item-desc">مشغل وسائط Novastar Taurus TB60</div>
+        <div class="catalog-item-meta"><span>2,800.00 ر.س</span><span>لكل جهاز</span></div>
+      </div>
+      <div class="catalog-item-card" data-code="CTRL-MSD300" data-unit="جهاز" data-price="1200" data-desc="كرت إرسال خارجي Novastar MSD300 للاتصال المباشر بين الكمبيوتر وشبكة كروت الاستقبال بالشاشة">
+        <div class="catalog-item-code">CTRL-MSD300</div>
+        <div class="catalog-item-desc">كرت إرسال Novastar Sending Card MSD300</div>
+        <div class="catalog-item-meta"><span>1,200.00 ر.س</span><span>لكل جهاز</span></div>
+      </div>
+
+      <div class="catalog-section-title">خدمات التركيب والهياكل (Services)</div>
+      <div class="catalog-item-card" data-code="SRV-INST" data-unit="خدمة" data-price="3000" data-desc="أعمال التركيب الاحترافي للشاشات والتشغيل والمعايرة وضبط نظام الألوان والتأكد من استقرار الإشارة">
+        <div class="catalog-item-code">SRV-INST</div>
+        <div class="catalog-item-desc">أعمال التركيب والبرمجة والتشغيل والمعايرة</div>
+        <div class="catalog-item-meta"><span>3,000.00 ر.س</span><span>لكل خدمة</span></div>
+      </div>
+      <div class="catalog-item-card" data-code="SRV-STRUC" data-unit="خدمة" data-price="4500" data-desc="تصنيع وتجهيز الهيكل الحديدي المخصص للتركيب حسب مساحة الموقع الفنية والوزن الإجمالي للشاشة">
+        <div class="catalog-item-code">SRV-STRUC</div>
+        <div class="catalog-item-desc">تصنيع وتجهيز الهيكل الحديدي الحامل للشاشة</div>
+        <div class="catalog-item-meta"><span>4,500.00 ر.س</span><span>لكل خدمة</span></div>
+      </div>
+      <div class="catalog-item-card" data-code="SRV-DELIV" data-unit="خدمة" data-price="500" data-desc="شحن وتوصيل الشاشة والمعدات والملحقات إلى موقع التركيب المتفق عليه بأمان وضمان التغليف المقاوم للصدمات">
+        <div class="catalog-item-code">SRV-DELIV</div>
+        <div class="catalog-item-desc">خدمات الشحن والتوصيل الآمن إلى الموقع</div>
+        <div class="catalog-item-meta"><span>500.00 ر.س</span><span>لكل خدمة</span></div>
+      </div>
+
+      <div class="catalog-section-title">ملحقات وكابلات (Accessories)</div>
+      <div class="catalog-item-card" data-code="ACC-POW" data-unit="حبة" data-price="1800" data-desc="صندوق توزيع طاقة رئيسي ثلاثي الأطوار 30KW لتنظيم إمداد التيار الكهربائي وتوفير الحماية للشاشة">
+        <div class="catalog-item-code">ACC-POW</div>
+        <div class="catalog-item-desc">صندوق توزيع وتأمين الطاقة للشاشة (Power Box)</div>
+        <div class="catalog-item-meta"><span>1,800.00 ر.س</span><span>لكل حبة</span></div>
+      </div>
+      <div class="catalog-item-card" data-code="ACC-CAB" data-unit="مجموعة" data-price="800" data-desc="مجموعة كابلات شبكة Category 6 وكابلات الإشارة والألياف الضوئية والتوصيلات اللازمة لتشغيل الشاشة">
+        <div class="catalog-item-code">ACC-CAB</div>
+        <div class="catalog-item-desc">باقة كابلات نقل البيانات وتوصيلات التحكم كاملة</div>
+        <div class="catalog-item-meta"><span>800.00 ر.س</span><span>لكل مجموعة</span></div>
+      </div>
     </div>
   </div>
+  
+  <!-- Catalog Toggle Floating Button -->
+  <button class="btn no-print" type="button" id="catalogToggleBtn" style="position:fixed; top:20px; right:20px; z-index:999; box-shadow:0 6px 20px rgba(232,76,43,0.25); background:var(--color-primary); color:#fff; border:none; padding:10px 18px; border-radius:999px; font-weight:800; display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-family:inherit;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+    <span>Catalog Presets</span>
+  </button>
 </body>
 </html>
