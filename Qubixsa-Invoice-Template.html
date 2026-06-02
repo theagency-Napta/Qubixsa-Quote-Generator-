@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Cairo,Arial,sans-serif;direction:rtl;background:#fff;color:#1a1a1a;font-size:12px;padding:28px 40px;}
+.header{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;margin-bottom:18px;border-bottom:4px solid #E84C2B;}
+.brand-name{font-size:26px;font-weight:900;color:#E84C2B;letter-spacing:2px;}
+.brand-tagline{font-size:9px;color:#aaa;letter-spacing:1px;margin-top:2px;}
+.brand-tagline-ar{font-size:9px;color:#bbb;margin-top:1px;}
+.doc-badge{background:#E84C2B;color:#fff;font-size:22px;font-weight:900;padding:10px 28px;border-radius:4px;}
+.doc-sub{text-align:center;font-size:9px;color:#E84C2B;margin-top:4px;font-weight:600;}
+.legal-row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;background:#fafafa;border:1px solid #eee;border-radius:4px;padding:6px 14px;margin-bottom:14px;font-size:10px;color:#555;}
+.legal-row strong{color:#E84C2B;}
+.meta-row{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap;}
+.to-block{flex:1.2;min-width:220px;background:#fff8f7;border:1.5px solid #E84C2B22;border-right:4px solid #E84C2B;border-radius:4px;padding:12px 16px;font-size:12px;line-height:2.2;}
+.to-title{font-size:10px;font-weight:700;color:#E84C2B;letter-spacing:1px;margin-bottom:6px;}
+.field-lbl{color:#999;font-size:10.5px;}
+.field-val{font-weight:600;color:#1a1a1a;}
+.info-block{flex:1;min-width:200px;border:1.5px solid #eee;border-radius:4px;overflow:hidden;}
+.info-block table{width:100%;border-collapse:collapse;}
+.info-block tr{border-bottom:1px solid #f0f0f0;}
+.info-block tr:last-child{border-bottom:none;}
+.info-block td{padding:7px 10px;font-size:11.5px;}
+.info-lbl{background:#f5f5f5;color:#E84C2B;font-weight:700;white-space:nowrap;width:140px;}
+.info-val{color:#1a1a1a;font-weight:600;}
+.validity-cell{color:#2a7a2a;font-weight:700;}
+.sec-hdr{display:flex;align-items:center;background:#E84C2B;color:#fff;font-weight:700;padding:8px 16px;font-size:12px;margin-top:18px;border-radius:4px 4px 0 0;letter-spacing:0.3px;}
+.sec-hdr::before{content:"";display:inline-block;width:3px;height:15px;background:rgba(255,255,255,0.45);margin-left:10px;border-radius:2px;}
+table.items{width:100%;border-collapse:collapse;border:1px solid #e0e0e0;border-top:none;}
+table.items th{background:#2c2c2c;color:#fff;padding:8px 10px;text-align:center;font-size:11px;font-weight:600;}
+table.items td{border:1px solid #e8e8e8;padding:10px;text-align:center;vertical-align:middle;font-size:11.5px;}
+table.items td.desc{text-align:right;line-height:1.7;}
+table.items td.code{font-weight:700;color:#E84C2B;font-size:10.5px;}
+table.items td.amount{font-weight:700;}
+table.items tr:nth-child(even) td{background:#fafafa;}
+.row-num{color:#ccc;font-size:10px;width:24px;}
+.totals-wrap{display:flex;justify-content:flex-end;border:1px solid #e0e0e0;border-top:none;padding:12px 16px 12px 0;}
+.totals-table{border-collapse:collapse;min-width:320px;}
+.totals-table tr{border-bottom:1px solid #f0f0f0;}
+.totals-table tr:last-child{border-bottom:none;}
+.totals-table td{padding:7px 14px;font-size:12px;}
+.lbl{color:#555;font-weight:600;text-align:right;white-space:nowrap;}
+.val{text-align:left;font-weight:700;color:#1a1a1a;min-width:110px;direction:ltr;}
+.grand-row td{background:#E84C2B !important;}
+.grand-lbl{color:#fff !important;font-size:13px;font-weight:900;}
+.grand-val{color:#fff !important;font-size:14px;font-weight:900;direction:ltr;}
+.bank-wrap{border:1px solid #e0e0e0;border-top:none;border-radius:0 0 4px 4px;overflow:hidden;}
+.bank-grid{display:grid;grid-template-columns:1fr 1fr;}
+.bank-item{padding:9px 14px;border-bottom:1px solid #f0f0f0;border-left:1px solid #f0f0f0;}
+.bank-lbl{font-size:10px;color:#999;font-weight:600;display:block;}
+.bank-val{font-size:12px;color:#1a1a1a;font-weight:700;display:block;direction:ltr;text-align:right;}
+.bank-note{background:#fff8f7;border-top:1.5px solid #E84C2B22;padding:9px 14px;font-size:11px;color:#555;text-align:center;}
+.bank-note strong{color:#E84C2B;}
+.detailed-terms-wrap{border:1px solid #e0e0e0;border-top:none;background:#fff;padding:14px 16px 16px;font-size:11px;line-height:1.85}
+.detailed-terms-list{list-style:none;counter-reset:clause;padding:0;margin:0}
+.detailed-terms-list>li{counter-increment:clause;padding:8px 0;border-bottom:1px solid #f0f0f0}
+.detailed-terms-list>li:last-child{border-bottom:none}
+.detailed-terms-list>li::before{content:counter(clause) ". ";font-weight:900;color:#E84C2B}
+.detailed-terms-list strong{font-weight:800}
+.detailed-terms-list ul{margin:6px 22px 0 0;list-style:disc}
+.detailed-terms-list ul li::before{content:none}
+.auth-wrap{display:flex;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 4px 4px;overflow:hidden;}
+.auth-block{flex:1;padding:16px 18px;font-size:12px;line-height:2;}
+.auth-block:first-child{border-left:1px solid #eee;background:#fafafa;}
+.auth-title{font-size:10px;color:#E84C2B;font-weight:700;letter-spacing:0.5px;margin-bottom:4px;}
+.auth-name{font-size:13px;font-weight:700;color:#1a1a1a;}
+.auth-detail{font-size:11px;color:#555;direction:ltr;text-align:right;}
+.sig-line{border-top:1.5px dashed #bbb;margin-top:36px;margin-bottom:4px;width:75%;}
+.sig-label{font-size:9.5px;color:#aaa;}
+.footer{margin-top:18px;border-top:3px solid #E84C2B;padding-top:10px;display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#777;flex-wrap:wrap;gap:6px;}
+.footer-brand{font-weight:900;color:#E84C2B;font-size:12px;}
+.footer-legal{font-size:9px;color:#bbb;margin-top:3px;}
+.watermark{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:80px;font-weight:900;color:rgba(232,76,43,0.04);white-space:nowrap;pointer-events:none;z-index:0;}
+@media(max-width:640px){body{padding:14px 16px;}  .meta-row,.auth-wrap{flex-direction:column;} .bank-grid{grid-template-columns:1fr;} table.items th,table.items td{padding:6px 5px;font-size:10px;} .totals-table{min-width:unset;width:100%;} }
+@media print{body{padding:12px 18px;} @page{size:A4;margin:12mm 15mm;} .sec-hdr,.grand-row td,table.items th,.doc-badge{-webkit-print-color-adjust:exact;print-color-adjust:exact;} .footer,.auth-wrap, .sec-hdr + div{page-break-inside:avoid;} }
+</style>
+</head>
+<body>
+<div class="watermark">عرض سعر</div>
+
+<div class="header">
+  <div><div class="doc-badge">عرض سعر</div><div class="doc-sub">QUOTATION — غير ملزم</div></div>
+  <div style="text-align:right">
+    <div class="brand-name">QUBIXSA</div>
+    <div class="brand-tagline">BUILT TO FIT EVERY SPACE</div>
+    <div class="brand-tagline-ar">كيوبيكس السعودية — حلول الشاشات المتكاملة</div>
+  </div>
+</div>
+
+<div class="legal-row">
+  <span><strong>الرقم الضريبي:</strong> <span style="color:#ccc;font-style:italic;">—</span></span>
+  <span><strong>السجل التجاري:</strong> <span style="color:#ccc;font-style:italic;">—</span></span>
+  <span><strong>الموقع:</strong> الرياض، المملكة العربية السعودية</span>
+  <span><strong>البريد:</strong> qubixsa1@gmail.com</span>
+</div>
+
+<div class="meta-row">
+  <div class="to-block">
+    <div class="to-title">📋 بيانات العميل</div>
+    <span class="field-lbl">الاسم / الشركة: </span><span class="field-val"></span><br>
+    <span class="field-lbl">جوال: </span><span class="field-val" style="color:#ccc;font-style:italic;"></span><br>
+    <span class="field-lbl">البريد: </span><span class="field-val" style="color:#ccc;font-style:italic;"></span><br>
+    <span class="field-lbl">المشروع: </span><span class="field-val">[Project Name]</span>
+  </div>
+  <div class="info-block">
+    <table>
+      <tr><td class="info-lbl">رقم العرض</td><td class="info-val" dir="ltr">{{QUOTE_NUMBER}}</td></tr>
+      <tr><td class="info-lbl">تاريخ الإصدار</td><td class="info-val">{{ISSUE_DATE}}</td></tr>
+      <tr><td class="info-lbl">صلاحية العرض</td><td class="info-val validity-cell">⏱ 3 أيام عمل</td></tr>
+      <tr><td class="info-lbl">جوال كيوبيكسا</td><td class="info-val" dir="ltr">+966 55 630 1055</td></tr>
+      <tr><td class="info-lbl">البريد الإلكتروني</td><td class="info-val" dir="ltr">qubixsa1@gmail.com</td></tr>
+    </table>
+
+  </div>
+</div>
+
+
+<table class="items">
+  <thead>
+    <tr>
+      <th class="row-num">#</th>
+      <th style="width:110px">كود</th>
+      <th>الوصف</th>
+      <th style="width:55px">الكمية</th>
+      <th style="width:50px">الوحدة</th>
+      <th style="width:105px">سعر الوحدة (SAR)</th>
+      <th style="width:105px">الإجمالي (SAR)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="row-num">1</td>
+      <td class="code">[Item Code]</td>
+      <td class="desc"><strong>[Product Name]</strong><br><span style="font-size:10.5px;color:#666;line-height:2">[Product Specs]</span></td>
+      <td>[Qty]</td>
+      <td>[Unit]</td>
+      <td class="amount">[Unit Price]</td>
+      <td class="amount">[Line Total]</td>
+    </tr>
+  </tbody>
+</table>
+<div class="totals-wrap">
+  <table class="totals-table">
+    <tr><td class="lbl">المجموع (SAR)</td><td class="val">[Subtotal]</td></tr>
+    <tr><td class="lbl">ضريبة القيمة المضافة 15%</td><td class="val">[VAT]</td></tr>
+    <tr class="grand-row"><td class="grand-lbl">🧾 الإجمالي النهائي (SAR)</td><td class="grand-val">[Grand Total]</td></tr>
+  </table>
+</div>
+<div class="sec-hdr">📊 المواصفات الفنية — [Product Name]</div>
+<div style="border:1px solid #e0e0e0;border-top:none;padding:14px 16px;background:#fff;font-size:11px;color:#999;min-height:40px;">
+  <!-- Product specifications added per quote -->
+</div>
+
+<div class="sec-hdr">📄 الشروط والأحكام</div>
+<div style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 4px 4px;overflow:hidden;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;">
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid #f0f0f0;border-left:1px solid #f0f0f0;">
+      <span style="font-size:20px;">💳</span>
+      <div><span style="font-size:10px;color:#E84C2B;font-weight:700;display:block;margin-bottom:2px;">شروط الدفع</span><span style="font-size:12px;font-weight:600;">100% عند التعميد</span></div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid #f0f0f0;">
+      <span style="font-size:20px;">🚚</span>
+      <div><span style="font-size:10px;color:#E84C2B;font-weight:700;display:block;margin-bottom:2px;">مدة التوريد</span><span style="font-size:12px;font-weight:600;"> 65 يوم عمل من استلام الدفعة المقدمة </span></div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid #f0f0f0;border-left:1px solid #f0f0f0;">
+      <span style="font-size:20px;">📍</span>
+      <div><span style="font-size:10px;color:#E84C2B;font-weight:700;display:block;margin-bottom:2px;">موقع التسليم</span><span style="font-size:12px;font-weight:600;">موقع العميل</span></div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid #f0f0f0;">
+      <span style="font-size:20px;">🛡️</span>
+      <div><span style="font-size:10px;color:#E84C2B;font-weight:700;display:block;margin-bottom:2px;">الضمان</span><span style="font-size:12px;font-weight:600;">ضمان شامل سنتان — غير شاملة سوء الاستخدام</span></div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;">
+    <span style="font-size:20px;">⏱️</span>
+    <div><span style="font-size:10px;color:#E84C2B;font-weight:700;display:block;margin-bottom:2px;">صلاحية العرض</span><span style="font-size:12px;font-weight:600;">هذا العرض ساري لمدة <strong>3 أيام عمل</strong> من تاريخ الإصدار. يُعدّ أي تأخر في القبول إلغاءً ضمنياً للعرض.</span></div>
+  </div>
+</div>
+
+<div class="sec-hdr">📋 البنود والشروط التفصيلية — بنود وشروط تركيب الشاشات</div>
+<div class="detailed-terms-wrap">
+  <ol class="detailed-terms-list">
+    <li><strong>نطاق العمل:</strong> يشمل العرض توريد وتركيب وتشغيل وبرمجة الشاشة حسب المواصفات الفنية المتفق عليها بين الطرفين.</li>
+    <li><strong>تجهيز الموقع:</strong> يلتزم العميل بتوفير مصدر كهرباء مناسب وثابت، وتجهيز الموقع للتركيب، بما في ذلك أعمال الديكور أو الحديد أو التمديدات الكهربائية المطلوبة إن وجدت.</li>
+    <li><strong>مسؤولية الهيكل والتثبيت:</strong> في حال توفير الهيكل الحديدي من قبل العميل، فإن الشركة غير مسؤولة عن أي مشاكل ناتجة عن ضعف الهيكل أو عدم مطابقته للمواصفات الفنية.</li>
+    <li><strong>مواعيد التنفيذ:</strong> تبدأ مدة التنفيذ بعد اعتماد المقاسات النهائية واستلام الدفعة المقدمة وتوفير الموقع جاهزًا للتركيب.</li>
+    <li><strong>التعديلات بعد الاعتماد:</strong> أي تعديل في المقاسات أو التصميم أو موقع التركيب بعد اعتماد الطلب قد يترتب عليه تكلفة إضافية ومدة تنفيذ إضافية.</li>
+    <li><strong>الضمان:</strong> يشمل الضمان الأعطال الفنية الناتجة عن عيوب التصنيع فقط، ولا يشمل:
+      <ul><li>سوء الاستخدام</li><li>انقطاع أو تذبذب الكهرباء</li><li>الكسر أو التلف الناتج عن العوامل الخارجية</li><li>دخول المياه بسبب التركيب في موقع غير مناسب</li></ul>
+    </li>
+    <li><strong>الصيانة:</strong> الصيانة الدورية أو الزيارات الفنية خارج نطاق الضمان يتم احتسابها بشكل منفصل ما لم يتم الاتفاق خلاف ذلك.</li>
+    <li><strong>الكهرباء والحماية:</strong> يلتزم العميل بتوفير قاطع كهربائي مناسب، ونظام تأريض وحماية من التذبذب الكهربائي للحفاظ على سلامة الشاشة.</li>
+    <li><strong>ظروف الموقع:</strong> الشركة غير مسؤولة عن أي تأخير ناتج عن عدم جاهزية الموقع أو منع العمل من قبل إدارة الموقع أو الجهات الرسمية.</li>
+    <li><strong>آلية الدفع:</strong> تتم الدفعات حسب الاتفاق المبرم، ويحق للشركة إيقاف الأعمال أو عدم التسليم النهائي في حال تأخر السداد.</li>
+    <li><strong>التسليم والاستلام:</strong> يعتبر المشروع مستلمًا بعد تشغيل الشاشة وتجربتها واعتمادها من العميل أو ممثله.</li>
+    <li><strong>القوة القاهرة:</strong> لا تتحمل الشركة أي تأخير أو ضرر ناتج عن ظروف خارجة عن الإرادة مثل الأحوال الجوية أو القرارات الحكومية أو مشاكل الشحن الدولية.</li>
+    <li><strong>إخلاء المسؤولية:</strong> الشركة غير مسؤولة عن المحتوى المعروض على الشاشة بعد التسليم، ويتحمل العميل كامل المسؤولية القانونية عن المحتوى.</li>
+    <li><strong>سلامة المعدات:</strong> بعد التسليم، يتحمل العميل مسؤولية حماية الشاشة والمعدات من العبث أو الصدمات أو العوامل البيئية غير المناسبة.</li>
+    <li><strong>إلغاء الطلب:</strong> في حال إلغاء الطلب بعد بدء التصنيع أو التوريد، يحق للشركة خصم التكاليف الفعلية التي تم صرفها على المشروع.</li>
+  </ol>
+</div>
+
+<div class="sec-hdr">🏦 التفاصيل البنكية</div>
+<div class="bank-wrap">
+  <div class="bank-grid">
+    <div class="bank-item"><span class="bank-lbl">اسم المستفيد</span><span class="bank-val" style="direction:rtl">مؤسسة المراحل التالية للمقاولات</span></div>
+    <div class="bank-item"><span class="bank-lbl">اسم البنك</span><span class="bank-val" style="direction:rtl">البنك الأهلي السعودي (SNB)</span></div>
+    <div class="bank-item"><span class="bank-lbl">رقم الحساب</span><span class="bank-val">70500000644200</span></div>
+    <div class="bank-item"><span class="bank-lbl">رقم الآيبان (IBAN)</span><span class="bank-val">SA761000007050000644200</span></div>
+    <div class="bank-item" style="border-left:none"><span class="bank-lbl">رمز السويفت (SWIFT)</span><span class="bank-val">NCBKSAJE</span></div>
+    <div class="bank-item"><span class="bank-lbl">العملة</span><span class="bank-val" style="direction:rtl">ريال سعودي (SAR)</span></div>
+  </div>
+  <div class="bank-note">⚠️ يرجى ذكر رقم العرض <strong>QUB-QTN-2026-LED-025</strong> في حقل الملاحظات عند التحويل.</div>
+</div>
+
+<div class="sec-hdr">✍️ التفويض والقبول</div>
+<div class="auth-wrap">
+  <div class="auth-block">
+    <div class="auth-title">✦ صادر عن</div>
+    <div class="auth-name">كيوبيكس السعودية — QUBIXSA</div>
+    <div class="auth-detail">محمد عدلان</div>
+    <div class="auth-detail">+966 55 630 1055</div>
+    <div class="auth-detail">qubixsa1@gmail.com</div>
+    <div class="auth-detail" style="direction:rtl">الرياض، المملكة العربية السعودية</div>
+    <div class="sig-line"></div>
+    <div class="sig-label">التوقيع والختم الرسمي</div>
+  </div>
+  <div class="auth-block" style="text-align:right">
+    <div class="auth-title">✦ قبول العميل</div>
+    <div class="auth-name">—</div><br>
+    <div style="font-size:10.5px;color:#888;line-height:1.8">بالتوقيع أدناه، يُقرّ العميل بموافقته على بنود وأسعار هذا العرض.</div>
+    <div class="sig-line" style="margin-right:0;margin-left:auto;margin-top:28px"></div>
+    <div class="sig-label">توقيع العميل وختم الشركة</div>
+  </div>
+</div>
+
+
+
+</div>
+
+<div class="footer">
+  <div>
+    <div class="footer-brand">QUBIXSA — كيوبيكس السعودية</div>
+    <div class="footer-legal">جميع الأسعار بالريال السعودي وتشمل ضريبة القيمة المضافة حيث ينطبق ذلك.</div>
+    <div class="footer-legal">هذا المستند سري ومخصص للجهة المعنية فقط — This document is confidential.</div>
+  </div>
+  <div style="text-align:left;color:#ccc;font-size:9px">
+    <div>الرياض، المملكة العربية السعودية</div>
+    <div>+966 55 630 1055</div>
+    <div>qubixsa1@gmail.com</div>
+  </div>
+</div>
+
+</body>
+</html>

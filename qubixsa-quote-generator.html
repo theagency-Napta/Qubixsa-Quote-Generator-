@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Qubixsa Quote Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --space-12: 3rem; --space-16: 4rem; --space-20: 5rem;
+      --radius-sm: 0.375rem; --radius-md: 0.75rem; --radius-lg: 1rem; --radius-xl: 1.5rem;
+      --color-bg: #f7f6f2; --color-surface: #fbfbf9; --color-surface-2: #f1efea;
+      --color-border: #ddd8d0; --color-divider: #e6e1da; --color-text: #25211a;
+      --color-muted: #74706b; --color-faint: #b4aea6; --color-primary: #e84c2b;
+      --color-primary-hover: #cc3f22; --color-primary-soft: rgba(232, 76, 43, 0.08);
+      --color-success: #2e7d4f; --color-warning: #9a5d12; --shadow-sm: 0 2px 8px rgba(31,26,19,0.06);
+      --shadow-md: 0 16px 48px rgba(31,26,19,0.12); --font-body: 'Inter', sans-serif;
+      --font-ar: 'Cairo', sans-serif; --content-wide: 1440px;
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    *{margin:0;padding:0}
+    html{width:100%;scroll-behavior:smooth}
+    body{min-height:100vh;font-family:var(--font-body);font-size:var(--text-base);background:linear-gradient(180deg,#f7f6f2 0%,#f3f0ea 100%);color:var(--color-text)}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer;border:none;background:none}
+    img,svg{max-width:100%;display:block}
+    .app{max-width:var(--content-wide);margin:0 auto;padding:var(--space-5)}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4);margin-bottom:var(--space-6)}
+    .brand{display:flex;align-items:center;gap:var(--space-4)}
+    .logo{width:52px;height:52px;border-radius:18px;background:var(--color-primary);color:#fff;display:grid;place-items:center;box-shadow:var(--shadow-sm)}
+    .logo svg{width:28px;height:28px}
+    .brand h1{font-size:var(--text-xl);line-height:1;font-weight:800;letter-spacing:-0.03em}
+    .brand p{color:var(--color-muted);font-size:var(--text-sm);margin-top:var(--space-1)}
+    .actions{display:flex;flex-wrap:wrap;gap:var(--space-3)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:0.6rem;padding:0.9rem 1.2rem;border-radius:999px;font-weight:700;transition:all .18s ease}
+    .btn-primary{background:var(--color-primary);color:#fff;box-shadow:var(--shadow-sm)}
+    .btn-primary:hover{background:var(--color-primary-hover);transform:translateY(-1px)}
+    .btn-secondary{background:#fff;border:1px solid var(--color-border);color:var(--color-text)}
+    .btn-secondary:hover{background:var(--color-surface-2)}
+    .layout{display:grid;grid-template-columns:minmax(360px, 520px) 1fr;gap:var(--space-5);align-items:start}
+    .panel,.preview-shell{background:rgba(255,255,255,0.7);backdrop-filter:blur(10px);border:1px solid rgba(221,216,208,0.8);border-radius:var(--radius-xl);box-shadow:var(--shadow-md)}
+    .panel{padding:var(--space-5);position:sticky;top:var(--space-5);max-height:calc(100vh - 2.5rem);overflow:auto}
+    .section{padding-bottom:var(--space-5);margin-bottom:var(--space-5);border-bottom:1px solid var(--color-divider)}
+    .section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+    .section-header{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin-bottom:var(--space-4)}
+    .section-title{display:flex;align-items:center;gap:0.75rem;font-size:var(--text-lg);font-weight:800}
+    .section-title .dot{width:12px;height:12px;border-radius:999px;background:var(--color-primary);box-shadow:0 0 0 8px var(--color-primary-soft)}
+    .helper{font-size:var(--text-xs);color:var(--color-muted);line-height:1.6}
+    .grid{display:grid;gap:var(--space-3)}
+    .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .field{display:grid;gap:0.45rem}
+    .field label{font-size:var(--text-sm);font-weight:700;color:#3b352d}
+    .field small{font-size:var(--text-xs);color:var(--color-muted)}
+    .input,.select,.textarea{width:100%;border-radius:16px;border:1px solid var(--color-border);background:#fff;padding:0.95rem 1rem;color:var(--color-text);transition:border-color .18s ease, box-shadow .18s ease}
+    .textarea{min-height:88px;resize:vertical}
+    .input:focus,.select:focus,.textarea:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 4px rgba(232,76,43,0.12)}
+    .toggle-row{display:flex;gap:var(--space-2);flex-wrap:wrap}
+    .chip{padding:0.7rem 0.95rem;border-radius:999px;background:#fff;border:1px solid var(--color-border);font-size:var(--text-sm);font-weight:700;color:#4a433b}
+    .chip.active{background:var(--color-primary-soft);border-color:rgba(232,76,43,0.35);color:var(--color-primary)}
+    .items{display:grid;gap:var(--space-3)}
+    .item-card{background:#fff;border:1px solid var(--color-border);border-radius:22px;padding:var(--space-4);display:grid;gap:var(--space-3)}
+    .item-top{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}
+    .item-title{font-size:var(--text-sm);font-weight:800;color:#403830}
+    .icon-btn{width:40px;height:40px;border-radius:999px;background:#fff;border:1px solid var(--color-border);display:grid;place-items:center;color:#6f675f}
+    .icon-btn:hover{background:#f7f2ee;color:var(--color-primary)}
+    .stack{display:flex;flex-direction:column;gap:var(--space-3)}
+    .totals-box{background:linear-gradient(180deg,#fff 0%,#fff8f6 100%);border:1px solid rgba(232,76,43,0.2);padding:var(--space-4);border-radius:22px;display:grid;gap:var(--space-3)}
+    .total-row{display:flex;justify-content:space-between;gap:var(--space-4);font-size:var(--text-sm);color:#52493f}
+    .total-row strong{font-size:var(--text-base);color:#1f1a16}
+    .grand{padding-top:var(--space-3);border-top:1px dashed rgba(232,76,43,0.28)}
+    .grand strong{font-size:var(--text-lg);color:var(--color-primary)}
+    .preview-shell{padding:var(--space-4);overflow:hidden}
+    .preview-toolbar{display:flex;justify-content:space-between;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4)}
+    .preview-badges{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+    .badge{font-size:var(--text-xs);font-weight:800;padding:0.55rem 0.8rem;border-radius:999px;background:#fff;border:1px solid var(--color-border);color:#514840}
+    .preview-frame{background:#eae5de;border-radius:28px;padding:var(--space-4);overflow:auto}
+    .quote-page{width:100%;max-width:100%;margin:0;background:#fff;padding:12mm 14mm;font-family:var(--font-ar);color:#191514;position:relative;overflow:hidden}
+    .quote-page::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e84c2b' fill-opacity='0.02'%3E%3Cpath d='M10 10h10v10H10zm20 20h10v10H30zm20-20h10v10H50zM70 30h10v10H70zM10 50h10v10H10zm40 0h10v10H50zm20 20h10v10H70zM30 70h10v10H30zM50 90h10v10H50zM10 90h10v10H10zm80-40h10v10H90zm0 40h10v10H90zM90 10h10v10H90z'/%3E%3C/g%3E%3C/svg%3E"); pointer-events: none; z-index: 0; }
+    .quote-page.rtl{direction:rtl}
+    .watermark{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;font-size:90px;font-weight:900;color:rgba(232,76,43,0.04);transform:rotate(-32deg)}
+    .quote-header{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4);padding-bottom:18px;border-bottom:4px solid var(--color-primary);position:relative;z-index:1}
+    .quote-badge{background:var(--color-primary);color:#fff;padding:12px 24px;border-radius:16px;font-weight:900;font-size:1.35rem;box-shadow:var(--shadow-sm)}
+    .quote-badge-sub{color:var(--color-primary);font-size:0.75rem;font-weight:800;margin-top:6px;text-align:center}
+    .quote-brand{text-align:right}
+    .quote-brand .name{font-size:2rem;font-weight:900;letter-spacing:0.12em;color:var(--color-primary)}
+    .quote-brand .tag{font-size:0.72rem;color:#999;letter-spacing:0.15em}
+    .quote-brand .tag-ar{font-size:0.78rem;color:#b1aaa1;margin-top:4px}
+    .legal-strip{margin-top:16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#faf8f6;border:1px solid #eee3dc;border-radius:16px;padding:10px 14px;font-size:0.75rem;color:#5c544b;position:relative;z-index:1}
+    .legal-strip strong{color:var(--color-primary)}
+    .meta-row{display:grid;grid-template-columns:1.1fr 0.95fr;gap:16px;margin-top:18px;position:relative;z-index:1}
+    .client-box{background:#fff8f6;border:1px solid rgba(232,76,43,0.18);border-inline-end:4px solid var(--color-primary);border-radius:16px;padding:16px;line-height:2}
+    .client-title{font-size:0.72rem;font-weight:800;color:var(--color-primary);letter-spacing:0.08em;margin-bottom:4px}
+    .label{font-size:0.78rem;color:#8d847a}
+    .value{font-weight:600;font-size:0.8rem;color:#2c2825}
+    .muted-empty{color:#c5bfb7;font-style:italic;font-weight:500}
+    .info-box{border:1px solid #ece5de;border-radius:16px;overflow:hidden;background:#fff}
+    .info-box table{width:100%;border-collapse:collapse}
+    .info-box td{padding:10px 12px;font-size:0.8rem;border-bottom:1px solid #f1ece7}
+    .info-box tr:last-child td{border-bottom:none}
+    .info-box .k{background:#f8f5f2;color:var(--color-primary);font-weight:800;width:44%}
+    .info-box .v{font-weight:700;color:#201a16}
+    .sec-hdr{display:flex;align-items:center;gap:0.6rem;background:var(--color-primary);color:#fff;font-size:0.92rem;font-weight:800;padding:10px 14px;border-radius:14px 14px 0 0;margin-top:18px;position:relative;z-index:1}
+    .items-table{width:100%;border-collapse:collapse;border:1px solid #ebe3dc;border-top:none;position:relative;z-index:1}
+    .items-table th{background:#2c2825;color:#fff;padding:10px 8px;font-size:0.76rem;font-weight:800;text-align:center}
+    .items-table td{border:1px solid #efe8e2;padding:11px 8px;font-size:0.78rem;text-align:center;vertical-align:middle}
+    .items-table tr:nth-child(even) td{background:#fcfbfa}
+    .items-table td.desc{text-align:right;line-height:1.85}
+    .items-table td.code{color:var(--color-primary);font-weight:900;font-size:0.72rem}
+    .items-table td.amount{font-weight:800}
+    .totals-wrap{display:flex;justify-content:flex-start;border:1px solid #ebe3dc;border-top:none;padding:12px 12px 12px 0;position:relative;z-index:1}
+    .totals-table{width:100%;max-width:420px;border-collapse:collapse}
+    .totals-table td{padding:8px 16px;font-size:0.80rem;border-bottom:1px solid #f2ece7}
+    .totals-table tr:last-child td{border-bottom:none}
+    .totals-table .l{text-align:right;color:#575046;font-weight:700}
+    .totals-table .r{text-align:left;direction:ltr;font-weight:800;color:#1b1715}
+    .totals-table .grand-row td{background:var(--color-primary);color:#fff !important;font-weight:900}
+    .totals-table .grand-row-green td{background:#2e7d4f !important;color:#fff !important;font-weight:900}
+    .spec-wrap,.terms-wrap,.detailed-terms-wrap,.bank-wrap,.auth-wrap,.quote-product-images{border:1px solid #ebe3dc;border-top:none;border-radius:0 0 16px 16px;overflow:hidden;position:relative;z-index:1}
+    .detailed-terms-wrap{background:#fff;padding:10px 18px 14px;font-size:0.75rem;line-height:1.72;color:#1d1815}
+    .detailed-terms-list{list-style:none;counter-reset:clause;padding:0;margin:0}
+    .detailed-terms-list>li{counter-increment:clause;padding:6px 0;border-bottom:1px solid #f1ece8}
+    .detailed-terms-list>li:last-child{border-bottom:none}
+    .detailed-terms-list>li::before{content:counter(clause) ". ";font-weight:900;color:var(--color-primary)}
+    .detailed-terms-list strong{font-weight:800;color:#1b1715}
+    .detailed-terms-list ul{margin:8px 24px 0 0;list-style:disc;padding:0}
+    .detailed-terms-list ul li{font-weight:600;color:#3d3832;margin-bottom:4px}
+    .detailed-terms-list ul li::before{content:none}
+    .section-hidden{display:none !important}
+    .quote-product-images{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px;background:#fff}
+    .quote-product-images img{width:100%;height:100px;object-fit:cover;border-radius:10px;border:1px solid #ebe3dc}
+    .preflight-box{background:#fff;border:1px solid var(--color-border);border-radius:16px;padding:var(--space-4);display:grid;gap:var(--space-2)}
+    .preflight-row{display:flex;align-items:center;gap:0.5rem;font-size:var(--text-sm);font-weight:600}
+    .preflight-row.ok{color:var(--color-success)}
+    .preflight-row.bad{color:#b42318}
+    .preflight-row .mark{width:1.25rem;text-align:center}
+    .internal-notes textarea{min-height:72px}
+    .item-templates{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:var(--space-2)}
+    .item-templates .btn{padding:0.45rem 0.75rem;font-size:var(--text-xs)}
+    .client-saved{display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.35rem}
+    .client-saved button{font-size:var(--text-xs);padding:0.35rem 0.65rem;border-radius:999px;border:1px solid var(--color-border);background:#fff}
+    .toast{position:fixed;bottom:1.25rem;right:1.25rem;background:#1f1a16;color:#fff;padding:0.85rem 1.1rem;border-radius:12px;font-size:var(--text-sm);font-weight:700;z-index:10000;box-shadow:var(--shadow-md);max-width:320px}
+    .toast.warn{background:#9a3412}
+    .spec-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+    .spec-column-title{background:#36312d;color:#fff;padding:8px 14px;font-size:0.74rem;font-weight:800;border-left:1px solid rgba(255,255,255,0.1)}
+    .spec-cell{border-left:1px solid #efebe7}
+    .spec-cell table{width:100%;border-collapse:collapse}
+    .spec-cell td{padding:8px 12px;font-size:0.76rem;border-bottom:1px solid #f4f0ed}
+    .spec-cell tr:nth-child(even) td{background:#faf8f6}
+    .spec-cell td:first-child{color:#8a8177;width:54%}
+    .spec-cell td:last-child{font-weight:800;color:#1f1a16}
+    .spec-bottom{display:grid;grid-template-columns:repeat(4,1fr);background:#fff8f6;border-top:1px solid rgba(232,76,43,0.14)}
+    .spec-stat{padding:12px 10px;text-align:center}
+    .spec-stat .k{font-size:0.68rem;color:#918980}
+    .spec-stat .v{font-size:1rem;font-weight:900;color:var(--color-primary);margin-top:4px}
+    .spec-stat .s{font-size:0.68rem;color:#b0a8a0;margin-top:3px}
+    .terms-grid{display:grid;grid-template-columns:1fr 1fr}
+    .term{display:flex;gap:12px;padding:14px 16px;border-bottom:1px solid #f1ece8;border-inline-start:1px solid #f1ece8;background:#fff}
+    .term.full{grid-column:1 / -1;border-inline-start:none}
+    .term-icon{font-size:1.25rem;line-height:1}
+    .term-title{font-size:0.72rem;font-weight:800;color:var(--color-primary);margin-bottom:2px}
+    .term-text{font-size:0.82rem;font-weight:700;color:#1d1815;line-height:1.75}
+    .bank-grid{display:grid;grid-template-columns:1fr 1fr}
+    .bank-item{padding:12px 14px;border-bottom:1px solid #f1ece8;border-inline-start:1px solid #f1ece8;background:#fff}
+    .bank-item .k{font-size:0.72rem;color:#93897f}
+    .bank-item .v{font-size:0.84rem;font-weight:900;color:#1e1916;margin-top:4px}
+    .bank-note{padding:12px 14px;background:#fff8f6;text-align:center;font-size:0.78rem;color:#5a534b;border-top:1px solid rgba(232,76,43,0.14)}
+    .bank-note strong{color:var(--color-primary)}
+    .auth-wrap{display:grid;grid-template-columns:1fr 1fr}
+    .auth-card{padding:18px;background:#fff}
+    .auth-card:first-child{background:#faf8f6;border-inline-start:1px solid #f0ebe7}
+    .auth-title{font-size:0.72rem;font-weight:800;color:var(--color-primary);margin-bottom:4px}
+    .auth-name{font-size:0.95rem;font-weight:900;color:#171311}
+    .auth-detail{font-size:0.8rem;color:#5d564e;line-height:1.9}
+    .sig-line{border-top:1.5px dashed #b9b0a7;width:74%;margin-top:38px;margin-bottom:6px}
+    .sig-label{font-size:0.7rem;color:#a59d94}
+    .quote-footer{display:flex;justify-content:space-between;gap:var(--space-4);align-items:flex-end;border-top:3px solid var(--color-primary);margin-top:18px;padding-top:10px;position:relative;z-index:1}
+    .footer-brand{font-size:0.82rem;font-weight:900;color:var(--color-primary)}
+    .footer-legal{font-size:0.68rem;color:#b1a8a0;margin-top:4px}
+    .footer-contact{font-size:0.68rem;color:#c0b7af;text-align:end}
+    .status{font-size:var(--text-xs);color:var(--color-muted);padding:0.7rem 0.9rem;background:#fff;border:1px solid var(--color-border);border-radius:999px}
+    .hide-print{display:inline-flex}
+    .section-toggles{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-2)}
+    .section-toggles label{display:flex;align-items:center;gap:0.35rem;font-size:var(--text-xs);font-weight:700;color:#4a433b;background:#fff;border:1px solid var(--color-border);padding:0.45rem 0.7rem;border-radius:999px;cursor:pointer}
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(31, 26, 19, 0.4);
+      backdrop-filter: blur(8px);
+      z-index: 20000;
+      display: grid;
+      place-items: center;
+      padding: var(--space-4);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-card {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      max-width: 620px;
+      width: 100%;
+      padding: var(--space-6);
+      box-shadow: var(--shadow-md);
+      transform: translateY(20px);
+      transition: transform 0.25s ease;
+      display: grid;
+      gap: var(--space-4);
+    }
+    .modal-overlay.active .modal-card {
+      transform: translateY(0);
+    }
+    @media screen{
+      .preview-frame .quote-page{max-width:210mm;margin:0 auto;border-radius:12px;box-shadow:0 18px 64px rgba(31,26,19,.12)}
+    }
+    @media screen and (max-width: 1180px){.layout{grid-template-columns:1fr}.panel{position:relative;top:0;max-height:none}}
+    @media screen and (max-width: 760px){
+      .app{padding:var(--space-3)} .topbar{flex-direction:column;align-items:flex-start}
+      .grid-2,.meta-row,.spec-grid,.terms-grid,.bank-grid,.auth-wrap{grid-template-columns:1fr}
+      .spec-bottom{grid-template-columns:1fr 1fr !important}
+      .quote-page{padding:22px 16px;border-radius:22px;overflow:visible}
+      .quote-header{flex-direction:column-reverse;align-items:flex-start}
+      .quote-brand{text-align:right;width:100%}
+      .preview-frame{padding:var(--space-2)} .totals-wrap{padding:8px 0 8px 8px}
+      .totals-table{min-width:100%} .items-table th,.items-table td{font-size:0.67rem;padding:8px 5px}
+      .watermark{font-size:56px} .actions{width:100%} .actions .btn{flex:1}
+      /* Mobile table scroll — prevents 486px+ wide table from clipping inside overflow:hidden */
+      #pvOptionASection,#pvOptionBSection{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:0 0 16px 16px}
+      .items-table{min-width:480px}
+      /* Product images: 2-col on mobile instead of 3 */
+      .quote-product-images{grid-template-columns:1fr 1fr}
+      /* Legal strip: stack items vertically on very small screens */
+      .legal-strip{flex-direction:column;gap:6px}
+    }
+    @media print{
+      html,body{width:100%;background:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      .app{max-width:none;padding:0}.topbar,.panel,.preview-toolbar,.toast{display:none !important}
+      .layout,.preview-shell,.preview-frame{display:block !important;width:100% !important;max-width:none !important;margin:0 !important;padding:0 !important;background:none !important;box-shadow:none !important;border:none !important;overflow:visible !important}
+      .quote-page{width:100% !important;max-width:none !important;margin:0 !important;padding:8mm 10mm !important;border-radius:0 !important;box-shadow:none !important;min-height:auto !important;overflow:visible !important}
+      .internal-notes,.no-print{display:none !important}
+      /* Section containers — never break mid-block */
+      .totals-wrap,.spec-wrap,.terms-wrap,.bank-wrap,.auth-wrap,.auth-card,.client-box,.info-box{page-break-inside:avoid}
+      /* Header elements — keep together */
+      .sec-hdr,.quote-header,.meta-row,.legal-strip{page-break-inside:avoid}
+      /* Section header must stay with its content */
+      .sec-hdr{page-break-after:avoid}
+      /* Table rows — individual rows won't split across pages */
+      .items-table tr{break-inside:avoid !important;page-break-inside:avoid !important;page-break-after:auto}
+      .items-table thead{display:table-header-group}
+      /* Items section — must not be trapped in a scroll container when printing */
+      #pvOptionASection,#pvOptionBSection,.items-table{overflow:visible !important;break-inside:auto !important;page-break-inside:auto !important;page-break-before:auto !important}
+      /* Detailed terms page placement and layout rules */
+      #previewDetailedTermsSection{break-before:page !important;page-break-before:always !important}
+      .detailed-terms-wrap{padding:8px 12px !important;line-height:1.55 !important}
+      .detailed-terms-list>li{padding:3px 0 !important;break-inside:avoid}
+      @page{size:A4 portrait;margin:8mm}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-label="Qubixsa logo">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+            <rect x="10" y="12" width="18" height="18" rx="4" fill="currentColor"></rect>
+            <rect x="36" y="12" width="18" height="18" rx="4" fill="currentColor" opacity="0.78"></rect>
+            <rect x="10" y="36" width="18" height="18" rx="4" fill="currentColor" opacity="0.78"></rect>
+            <rect x="36" y="36" width="18" height="18" rx="4" fill="currentColor"></rect>
+          </svg>
+        </div>
+        <div>
+          <h1>Qubixsa Quote Generator</h1>
+          <p>Arabic RTL quotes with live pricing, legal terms, and print-ready A4 PDF output.</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary" id="sampleBtn" type="button">Load sample</button>
+        <button class="btn btn-secondary" id="newBtn" type="button">New quote</button>
+        <button class="btn btn-secondary" id="duplicateBtn" type="button">Duplicate</button>
+        <button class="btn btn-secondary" id="exportBtn" type="button">Export HTML</button>
+        <button class="btn btn-secondary" id="emailHelperBtn" type="button">Email helper</button>
+        <button class="btn btn-primary" id="printBtn" type="button">Print / Save PDF</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="panel">
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <div class="section-title"><span class="dot"></span><span>Quote setup</span></div>
+              <p class="helper">Fill the form — preview updates instantly. Save as PDF when the checklist is green.</p>
+            </div>
+            <span class="status" id="saveStatus">Live preview ready</span>
+          </div>
+          <div class="grid grid-2">
+            <div class="field">
+              <label for="quoteNumber">Quote number</label>
+              <input class="input" id="quoteNumber" value="QUB-2605-029" />
+            </div>
+            <div class="field">
+              <label for="issueDate">Issue date</label>
+              <input class="input" id="issueDate" value="12 May 2026" />
+            </div>
+            <div class="field">
+              <label for="validityDays">Validity</label>
+              <input class="input" id="validityDays" type="number" min="1" value="3" />
+            </div>
+            <div class="field">
+              <label for="vatRate">VAT %</label>
+              <input class="input" id="vatRate" type="number" min="0" step="0.01" value="15" />
+            </div>
+            <div class="field">
+              <label for="currency">Currency</label>
+              <select class="select" id="currency">
+                <option value="SAR" selected>SAR (ر.س)</option>
+                <option value="USD">USD ($)</option>
+              </select>
+            </div>
+            <div class="field" style="grid-column:1 / -1; margin-top:0.35rem;">
+              <label style="display:inline-flex; align-items:center; gap:0.45rem; cursor:pointer; font-size:var(--text-sm); font-weight:700; color:#3b352d;">
+                <input type="checkbox" id="compareQuoteCheckbox" style="width:16px; height:16px; accent-color:var(--color-primary);" />
+                <span>Enable Option A/B Comparison Quote</span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title"><span class="dot"></span><span>Client + issuer</span></div>
+          </div>
+          <div class="grid grid-2">
+            <div class="field">
+              <label for="clientName">Client company</label>
+              <input class="input" id="clientName" value="فنون التراث" />
+            </div>
+            <div class="field">
+              <label for="projectName">Project</label>
+              <input class="input" id="projectName" value="جدار LED داخلي عالي الدقة P1.5 – 2.4م × 4.8م" />
+            </div>
+            <div class="field">
+              <label for="clientPhone">Client phone</label>
+              <input class="input" id="clientPhone" placeholder="Optional" />
+            </div>
+            <div class="field">
+              <label for="clientEmail">Client email</label>
+              <input class="input" id="clientEmail" placeholder="Optional" />
+            </div>
+            <div class="field" style="grid-column:1 / -1;">
+              <label for="clientVat">Client VAT Number (الرقم الضريبي)</label>
+              <input class="input" id="clientVat" placeholder="Optional" />
+            </div>
+            <div class="field">
+              <label for="clientCr">Client CR (السجل التجاري)</label>
+              <input class="input" id="clientCr" placeholder="Optional" />
+            </div>
+            <div class="field">
+              <label for="clientLocation">Client Location (موقع العميل)</label>
+              <input class="input" id="clientLocation" placeholder="Optional" />
+            </div>
+            <div class="field grid" style="grid-column:1 / -1;">
+              <label for="issuerName">Issuer / sales contact</label>
+              <input class="input" id="issuerName" value="عبد الله عثمان" />
+            </div>
+            <div class="field" style="grid-column:1 / -1;">
+              <label>Saved clients</label>
+              <div class="client-saved" id="clientLibrary"></div>
+              <button class="btn btn-secondary" type="button" id="saveClientBtn" style="margin-top:0.5rem;width:100%;">Save current client</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title"><span class="dot"></span><span>Quote style</span></div>
+            <p class="helper">Preset loads default specs, items, and which sections appear on the quote.</p>
+          </div>
+          <div class="toggle-row" id="productStyleToggle">
+            <button class="chip active" data-style="led" type="button">LED display</button>
+            <button class="chip" data-style="lcd" type="button">LCD / signage</button>
+            <button class="chip" data-style="custom" type="button">Custom</button>
+          </div>
+          <div class="section-toggles" id="sectionToggles">
+            <label><input type="checkbox" id="toggleSpecs" checked /> Specs</label>
+            <label><input type="checkbox" id="toggleDetailedTerms" checked /> Detailed terms</label>
+            <label><input type="checkbox" id="toggleBank" checked /> Bank</label>
+            <label><input type="checkbox" id="toggleImages" /> Product images</label>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title"><span class="dot"></span><span>Items</span></div>
+            <div style="display:flex; gap:0.4rem;">
+              <button class="btn btn-secondary" id="importCsvBtn" type="button" style="padding:0.45rem 0.75rem; font-size:var(--text-xs);">+ CSV Import</button>
+              <button class="btn btn-secondary" id="addItemBtn" type="button">Add item</button>
+            </div>
+          </div>
+          <div id="optionTabsWrap" style="display:none; gap:var(--space-2); margin-bottom:var(--space-3); border-bottom:1px solid var(--color-divider); padding-bottom:var(--space-2);">
+            <button class="chip active" id="tabOptionA" type="button" style="padding:0.5rem 0.8rem;">Option A Items</button>
+            <button class="chip" id="tabOptionB" type="button" style="padding:0.5rem 0.8rem;">Option B Items</button>
+          </div>
+          <div class="item-templates">
+            <button type="button" class="btn btn-secondary" data-template="led">+ LED wall</button>
+            <button type="button" class="btn btn-secondary" data-template="tv">+ Samsung TV</button>
+            <button type="button" class="btn btn-secondary" data-template="install">+ Installation</button>
+            <button type="button" class="btn btn-secondary" data-template="novastar">+ Novastar</button>
+          </div>
+          <div class="items" id="itemsContainer"></div>
+          <div class="items" id="itemsContainerB" style="display:none;"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title"><span class="dot"></span><span>Technical specs</span></div>
+          </div>
+          <div class="grid grid-2">
+            <div class="field"><label for="specPitch">Pixel pitch</label><input class="input" id="specPitch" /></div>
+            <div class="field"><label for="specLamp">Lamp type</label><input class="input" id="specLamp" /></div>
+            <div class="field"><label for="specModule">Module size</label><input class="input" id="specModule" /></div>
+            <div class="field"><label for="specResolution">Module resolution</label><input class="input" id="specResolution" /></div>
+            <div class="field"><label for="specDensity">Density</label><input class="input" id="specDensity" /></div>
+            <div class="field"><label for="specMaintenance">Front maintenance</label><input class="input" id="specMaintenance" /></div>
+            <div class="field"><label for="specPanel">Panel size</label><input class="input" id="specPanel" /></div>
+            <div class="field"><label for="specModulesCount">Modules/Panel</label><input class="input" id="specModulesCount" /></div>
+            <div class="field"><label for="specPanelRes">Panel resolution</label><input class="input" id="specPanelRes" /></div>
+            <div class="field"><label for="specWeight">Panel weight</label><input class="input" id="specWeight" /></div>
+            <div class="field"><label for="specMaterial">Material</label><input class="input" id="specMaterial" /></div>
+            <div class="field"><label for="specControl">Control system</label><input class="input" id="specControl" /></div>
+            <div class="field"><label for="specBrightness">Brightness</label><input class="input" id="specBrightness" /></div>
+            <div class="field"><label for="specRefresh">Refresh rate</label><input class="input" id="specRefresh" /></div>
+            <div class="field"><label for="specViewing">Viewing angle</label><input class="input" id="specViewing" /></div>
+            <div class="field"><label for="specLifespan">Lifespan</label><input class="input" id="specLifespan" /></div>
+            <div class="field"><label for="specPowerAvg">Average power</label><input class="input" id="specPowerAvg" /></div>
+            <div class="field"><label for="specPowerMax">Max power</label><input class="input" id="specPowerMax" /></div>
+            <div class="field"><label for="specArea">Area summary</label><input class="input" id="specArea" /></div>
+            <div class="field"><label for="specAreaNote">Area note</label><input class="input" id="specAreaNote" /></div>
+            <div class="field"><label for="specMinView">Min view dist.</label><input class="input" id="specMinView" /></div>
+            <div class="field"><label for="specMinViewNote">Min view note</label><input class="input" id="specMinViewNote" /></div>
+            <div class="field"><label for="specIpRating">IP Rating</label><input class="input" id="specIpRating" /></div>
+            <div class="field"><label for="specIpNote">IP Rating note</label><input class="input" id="specIpNote" /></div>
+            <div class="field"><label for="specGrayscale">Grayscale</label><input class="input" id="specGrayscale" /></div>
+            <div class="field"><label for="specGrayscaleNote">Grayscale note</label><input class="input" id="specGrayscaleNote" /></div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title"><span class="dot"></span><span>Ready to send</span></div>
+          </div>
+          <div class="preflight-box" id="preflightBox">
+            <div class="preflight-row bad" id="pfClient"><span class="mark">○</span> Client name</div>
+            <div class="preflight-row bad" id="pfQuote"><span class="mark">○</span> Quote number & date</div>
+            <div class="preflight-row bad" id="pfItems"><span class="mark">○</span> At least one priced item</div>
+            <div class="preflight-row bad" id="pfTotals"><span class="mark">○</span> Totals calculated</div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title"><span class="dot"></span><span>Terms + bank</span></div>
+          </div>
+          <div class="stack">
+            <div class="grid grid-2">
+              <div class="field"><label for="discountType">Discount</label>
+                <select class="select" id="discountType"><option value="none">None</option><option value="percent">Percent %</option><option value="fixed">Fixed</option></select>
+              </div>
+              <div class="field"><label for="discountValue">Discount value</label><input class="input" id="discountValue" type="number" min="0" step="0.01" value="0" /></div>
+            </div>
+            <div class="field"><label for="paymentTerms">Payment terms</label><input class="input" id="paymentTerms" value="100% عند التعميد" /></div>
+            <div class="field"><label for="deliveryTerms">Delivery time</label><input class="input" id="deliveryTerms" value="3 أيام من استلام الدفعة المقدمة" /></div>
+            <div class="field"><label for="warrantyTerms">Warranty</label><input class="input" id="warrantyTerms" value="ضمان شامل سنتان — غير شاملة سوء الاستخدام" /></div>
+            <div class="grid grid-2">
+              <div class="field"><label for="vatNumber">Company VAT no.</label><input class="input" id="vatNumber" /></div>
+              <div class="field"><label for="crNumber">Company CR no.</label><input class="input" id="crNumber" /></div>
+            </div>
+            <div class="field"><label for="beneficiary">Beneficiary</label><input class="input" id="beneficiary" value="مؤسسة المراحل الثقة للمقاولات" /></div>
+            <div class="field"><label for="bankName">Bank name</label><input class="input" id="bankName" value="البنك الأهلي السعودي (SNB)" /></div>
+            <div class="grid grid-2">
+              <div class="field"><label for="accountNumber">Account no.</label><input class="input" id="accountNumber" value="70500000644200" /></div>
+              <div class="field"><label for="iban">IBAN</label><input class="input" id="iban" value="SA7610000007050000644200" /></div>
+            </div>
+            <div class="field"><label for="swift">SWIFT</label><input class="input" id="swift" value="NCBKSAJE" /></div>
+            <div class="field internal-notes no-print"><label for="internalNotes">Internal notes (not printed)</label><textarea class="textarea" id="internalNotes" placeholder="Delivery notes, margin, follow-up…"></textarea></div>
+            <div class="field"><label for="productImages">Product images (optional)</label><input class="input" id="productImages" type="file" accept="image/*" multiple /></div>
+            <div id="productImagePreview" class="grid grid-2"></div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title"><span class="dot"></span><span>Pricing summary</span></div>
+          </div>
+          <div class="totals-box">
+            <div id="sidebarTotalsSingle">
+              <div class="total-row"><span>Subtotal</span><strong id="uiSubtotal">0.00</strong></div>
+              <div class="total-row"><span>VAT</span><strong id="uiVat">0.00</strong></div>
+              <div class="total-row grand"><span>Total</span><strong id="uiGrand">0.00</strong></div>
+            </div>
+            <div id="sidebarTotalsCompare" style="display:none;">
+              <div style="font-weight:bold; font-size:var(--text-xs); color:var(--color-primary); border-bottom:1px solid rgba(232,76,43,0.1); padding-bottom:2px; margin-bottom:4px;">Option A (الخيار أ)</div>
+              <div class="total-row"><span>Subtotal A</span><strong id="uiSubtotalA">0.00</strong></div>
+              <div class="total-row"><span>VAT A</span><strong id="uiVatA">0.00</strong></div>
+              <div class="total-row grand" style="border-top:1px dashed rgba(232,76,43,0.15);"><span>Total A</span><strong id="uiGrandA">0.00</strong></div>
+              
+              <div style="font-weight:bold; font-size:var(--text-xs); color:#2e7d4f; border-bottom:1px solid rgba(46,125,79,0.1); padding-bottom:2px; margin-top:10px; margin-bottom:4px;">Option B (الخيار ب)</div>
+              <div class="total-row"><span>Subtotal B</span><strong id="uiSubtotalB">0.00</strong></div>
+              <div class="total-row"><span>VAT B</span><strong id="uiVatB">0.00</strong></div>
+              <div class="total-row grand" style="border-top:1px dashed rgba(46,125,79,0.15);"><span style="color:#2e7d4f !important;">Total B</span><strong id="uiGrandB" style="color:#2e7d4f !important;">0.00</strong></div>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="preview-shell">
+        <div class="preview-toolbar">
+          <div>
+            <h2 style="font-size:var(--text-lg);font-weight:800;">Live quote preview</h2>
+            <p class="helper">This is exactly what prints to PDF — full A4 width.</p>
+          </div>
+          <div class="preview-badges">
+            <span class="badge">RTL ready</span>
+            <span class="badge">Print optimized</span>
+            <span class="badge">Dynamic totals</span>
+          </div>
+        </div>
+        <div class="preview-frame">
+          <article class="quote-page rtl" id="quotePreview">
+            <div class="watermark">عرض سعر</div>
+            <div class="quote-header">
+              <div>
+                <div class="quote-badge">عرض سعر</div>
+                <div class="quote-badge-sub">QUOTATION — غير ملزم</div>
+              </div>
+              <div class="quote-brand">
+                <div class="name">QUBIXSA</div>
+                <div class="tag">BUILT TO FIT EVERY SPACE</div>
+                <div class="tag-ar">كيوبيكس السعودية — حلول الشاشات المتكاملة</div>
+              </div>
+            </div>
+
+            <div class="legal-strip">
+              <span><strong>الرقم الضريبي:</strong> <span id="pvVatNumber" class="muted-empty">—</span></span>
+              <span><strong>السجل التجاري:</strong> <span id="pvCrNumber" class="muted-empty">—</span></span>
+              <span><strong>الموقع:</strong> الرياض، المملكة العربية السعودية</span>
+              <span><strong>البريد:</strong> qubixsa1@gmail.com</span>
+            </div>
+
+            <div class="meta-row">
+              <div class="client-box">
+                <div class="client-title">📋 بيانات العميل</div>
+                <div><span class="label">الاسم / الشركة: </span><span class="value" id="pvClientName"></span></div>
+                <div id="pvClientVatRow" style="display:none"><span class="label">الرقم الضريبي: </span><span class="value" id="pvClientVat"></span></div>
+                <div id="pvClientCrRow" style="display:none"><span class="label">السجل التجاري: </span><span class="value" id="pvClientCr"></span></div>
+                <div id="pvClientLocationRow" style="display:none"><span class="label">الموقع: </span><span class="value" id="pvClientLocation"></span></div>
+                <div><span class="label">جوال: </span><span class="value" id="pvClientPhone"></span></div>
+                <div><span class="label">البريد: </span><span class="value" id="pvClientEmail"></span></div>
+                <div><span class="label">المشروع: </span><span class="value" id="pvProjectName"></span></div>
+              </div>
+              <div class="info-box">
+                <table>
+                  <tr><td class="k">رقم العرض</td><td class="v" id="pvQuoteNumber"></td></tr>
+                  <tr><td class="k">تاريخ الإصدار</td><td class="v" id="pvIssueDate"></td></tr>
+                  <tr><td class="k">صلاحية العرض</td><td class="v" id="pvValidity"></td></tr>
+                  <tr><td class="k">جوال كيوبيكسا</td><td class="v" dir="ltr">+966 55 630 1055</td></tr>
+                  <tr><td class="k">البريد الإلكتروني</td><td class="v" dir="ltr">qubixsa1@gmail.com</td></tr>
+                </table>
+              </div>
+            </div>
+
+            <!-- Option A Block -->
+            <div id="pvOptionASection">
+              <div class="sec-hdr" id="pvHdrA">🖥 تفاصيل البنود والأسعار</div>
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th style="width:32px">#</th>
+                    <th style="width:112px">كود</th>
+                    <th>الوصف</th>
+                    <th style="width:60px">الكمية</th>
+                    <th style="width:58px">الوحدة</th>
+                    <th style="width:112px">سعر الوحدة (<span class="currency-ar">ر.س</span>)</th>
+                    <th style="width:112px">الإجمالي (<span class="currency-ar">ر.س</span>)</th>
+                  </tr>
+                </thead>
+                <tbody id="previewItems"></tbody>
+              </table>
+
+              <div class="totals-wrap">
+                <table class="totals-table">
+                  <tr><td class="l">المجموع قبل الضريبة (<span class="currency-ar">ر.س</span>)</td><td class="r" id="pvSubtotal"></td></tr>
+                  <tr id="pvDiscountRow" style="display:none"><td class="l" id="pvDiscountLabel">خصم</td><td class="r" id="pvDiscount"></td></tr>
+                  <tr><td class="l">المجموع بعد الخصم (<span class="currency-ar">ر.س</span>)</td><td class="r" id="pvAfterDiscount"></td></tr>
+                  <tr><td class="l">ضريبة القيمة المضافة <span id="pvVatRateLabel"></span>%</td><td class="r" id="pvVat"></td></tr>
+                  <tr class="grand-row"><td class="l">🧾 الإجمالي شامل الضريبة (<span class="currency-ar">ر.س</span>)</td><td class="r" id="pvGrand"></td></tr>
+                </table>
+              </div>
+            </div>
+
+            <!-- Option B Block (Comparison) -->
+            <div id="pvOptionBSection" class="section-hidden">
+              <div class="sec-hdr" id="pvHdrB" style="background:#2e7d4f;">🖥 تفاصيل البنود والأسعار — الخيار ب (Option B)</div>
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th style="width:32px">#</th>
+                    <th style="width:112px">كود</th>
+                    <th>الوصف</th>
+                    <th style="width:60px">الكمية</th>
+                    <th style="width:58px">الوحدة</th>
+                    <th style="width:112px">سعر الوحدة (<span class="currency-ar">ر.س</span>)</th>
+                    <th style="width:112px">الإجمالي (<span class="currency-ar">ر.س</span>)</th>
+                  </tr>
+                </thead>
+                <tbody id="previewItemsB"></tbody>
+              </table>
+
+              <div class="totals-wrap">
+                <table class="totals-table">
+                  <tr><td class="l">المجموع قبل الضريبة (<span class="currency-ar">ر.س</span>)</td><td class="r" id="pvSubtotalB"></td></tr>
+                  <tr id="pvDiscountRowB" style="display:none"><td class="l" id="pvDiscountLabelB">خصم</td><td class="r" id="pvDiscountB"></td></tr>
+                  <tr><td class="l">المجموع بعد الخصم (<span class="currency-ar">ر.س</span>)</td><td class="r" id="pvAfterDiscountB"></td></tr>
+                  <tr><td class="l">ضريبة القيمة المضافة <span id="pvVatRateLabelB"></span>%</td><td class="r" id="pvVatB"></td></tr>
+                  <tr class="grand-row-green"><td class="l">🧾 الإجمالي شامل الضريبة (<span class="currency-ar">ر.س</span>)</td><td class="r" id="pvGrandB"></td></tr>
+                </table>
+              </div>
+            </div>
+
+            <div id="previewImagesSection" class="section-hidden">
+              <div class="sec-hdr">📷 صور المنتج</div>
+              <div class="quote-product-images" id="pvProductImages"></div>
+            </div>
+
+            <div id="previewSpecsSection">
+            <div class="sec-hdr">📊 المواصفات الفنية</div>
+            <div class="spec-wrap" id="pvSpecWrap">
+              <div class="spec-grid">
+                <div class="spec-column-title">وحدة الوحدة (Module)</div>
+                <div class="spec-column-title">اللوحة (Panel / Cabinet)</div>
+                <div class="spec-column-title" style="border-left:none;">الأداء والتشغيل</div>
+                <div class="spec-cell">
+                  <table>
+                    <tr><td>بكسل بيتش</td><td id="pvSpecPitch"></td></tr>
+                    <tr><td>نوع المصباح</td><td id="pvSpecLamp"></td></tr>
+                    <tr><td>أبعاد الوحدة</td><td id="pvSpecModule"></td></tr>
+                    <tr><td>دقة الوحدة</td><td id="pvSpecResolution"></td></tr>
+                    <tr><td>الكثافة</td><td id="pvSpecDensity"></td></tr>
+                    <tr><td>صيانة أمامية</td><td id="pvSpecMaintenance"></td></tr>
+                  </table>
+                </div>
+                <div class="spec-cell">
+                  <table>
+                    <tr><td>أبعاد اللوحة</td><td id="pvSpecPanel"></td></tr>
+                    <tr><td>عدد الوحدات/لوحة</td><td id="pvSpecModulesCount"></td></tr>
+                    <tr><td>دقة اللوحة</td><td id="pvSpecPanelRes"></td></tr>
+                    <tr><td>وزن اللوحة</td><td id="pvSpecWeight"></td></tr>
+                    <tr><td>المادة</td><td id="pvSpecMaterial"></td></tr>
+                    <tr><td>نظام التحكم</td><td id="pvSpecControl"></td></tr>
+                  </table>
+                </div>
+                <div class="spec-cell" style="border-left:none;">
+                  <table>
+                    <tr><td>السطوع</td><td id="pvSpecBrightness"></td></tr>
+                    <tr><td>معدل التحديث</td><td id="pvSpecRefresh"></td></tr>
+                    <tr><td>زاوية الرؤية</td><td id="pvSpecViewing"></td></tr>
+                    <tr><td>العمر الافتراضي</td><td id="pvSpecLifespan"></td></tr>
+                    <tr><td>استهلاك متوسط</td><td id="pvSpecPowerAvg"></td></tr>
+                    <tr><td>استهلاك أقصى</td><td id="pvSpecPowerMax"></td></tr>
+                  </table>
+                </div>
+              </div>
+              <div class="spec-bottom">
+                <div class="spec-stat"><div class="k">المساحة الإجمالية</div><div class="v" id="pvSpecArea"></div><div class="s" id="pvSpecAreaNote"></div></div>
+                <div class="spec-stat"><div class="k">أقل مسافة مشاهدة</div><div class="v" id="pvSpecMinView"></div><div class="s" id="pvSpecMinViewNote"></div></div>
+                <div class="spec-stat"><div class="k">معدل الحماية</div><div class="v" id="pvSpecIpRating"></div><div class="s" id="pvSpecIpNote"></div></div>
+                <div class="spec-stat"><div class="k">تدرج الرمادي</div><div class="v" id="pvSpecGrayscale"></div><div class="s" id="pvSpecGrayscaleNote"></div></div>
+              </div>
+            </div>
+            </div>
+
+            <div class="sec-hdr">📄 الشروط والأحكام</div>
+            <div class="terms-wrap">
+              <div class="terms-grid">
+                <div class="term"><div class="term-icon">💳</div><div><div class="term-title">شروط الدفع</div><div class="term-text" id="pvPaymentTerms"></div></div></div>
+                <div class="term"><div class="term-icon">🚚</div><div><div class="term-title">مدة التوريد</div><div class="term-text" id="pvDeliveryTerms"></div></div></div>
+                <div class="term"><div class="term-icon">📍</div><div><div class="term-title">موقع التسليم</div><div class="term-text">موقع العميل</div></div></div>
+                <div class="term"><div class="term-icon">🛡️</div><div><div class="term-title">الضمان</div><div class="term-text" id="pvWarrantyTerms"></div></div></div>
+                <div class="term full"><div class="term-icon">⏱️</div><div><div class="term-title">صلاحية العرض</div><div class="term-text" id="pvValidityText"></div></div></div>
+              </div>
+            </div>
+
+            <div id="previewBankSection">
+            <div class="sec-hdr">🏦 التفاصيل البنكية</div>
+            <div class="bank-wrap">
+              <div class="bank-grid">
+                <div class="bank-item"><div class="k">اسم المستفيد</div><div class="v" id="pvBeneficiary"></div></div>
+                <div class="bank-item"><div class="k">اسم البنك</div><div class="v" id="pvBankName"></div></div>
+                <div class="bank-item"><div class="k">رقم الحساب</div><div class="v" id="pvAccount"></div></div>
+                <div class="bank-item"><div class="k">رقم الآيبان</div><div class="v" id="pvIban"></div></div>
+                <div class="bank-item"><div class="k">رمز السويفت</div><div class="v" id="pvSwift"></div></div>
+                <div class="bank-item"><div class="k">العملة</div><div class="v" id="pvBankCurrency">ريال سعودي (SAR)</div></div>
+              </div>
+              <div class="bank-note">⚠️ يرجى ذكر رقم العرض <strong id="pvBankQuoteNumber"></strong> في حقل الملاحظات عند التحويل البنكي.</div>
+            </div>
+            </div>
+
+            <div class="sec-hdr">✍️ التفويض والقبول</div>
+            <div class="auth-wrap">
+              <div class="auth-card">
+                <div class="auth-title">✦ صادر عن</div>
+                <div class="auth-name">كيوبيكس السعودية — QUBIXSA</div>
+                <div class="auth-detail" id="pvIssuer"></div>
+                <div class="auth-detail">+966 55 630 1055</div>
+                <div class="auth-detail">qubixsa1@gmail.com</div>
+                <div class="auth-detail" style="direction:rtl;">الرياض، المملكة العربية السعودية</div>
+                <div class="sig-line"></div>
+                <div class="sig-label">التوقيع والختم الرسمي</div>
+              </div>
+              <div class="auth-card" style="text-align:right;">
+                <div class="auth-title">✦ قبول العميل</div>
+                <div class="auth-name" id="pvClientAcceptance"></div>
+                <div class="auth-detail" style="direction:rtl;margin-top:12px;">بالتوقيع أدناه، يُقرّ العميل بموافقته على بنود وأسعار هذا العرض وفق الشروط والأحكام المذكورة أعلاه.</div>
+                <div class="sig-line" style="margin-right:0;margin-left:auto;"></div>
+                <div class="sig-label">توقيع العميل وختم الشركة</div>
+              </div>
+            </div>
+
+            <div id="previewDetailedTermsSection">
+            <div class="sec-hdr">📋 البنود والشروط التفصيلية — بنود وشروط تركيب الشاشات</div>
+            <div class="detailed-terms-wrap">
+              <ol class="detailed-terms-list">
+                <li><strong>نطاق العمل:</strong> يشمل العرض توريد وتركيب وتشغيل وبرمجة الشاشة حسب المواصفات الفنية المتفق عليها بين الطرفين.</li>
+                <li><strong>تجهيز الموقع:</strong> يلتزم العميل بتوفير مصدر كهرباء مناسب وثابت، وتجهيز الموقع للتركيب، بما في ذلك أعمال الديكور أو الحديد أو التمديدات الكهربائية المطلوبة إن وجدت.</li>
+                <li><strong>مسؤولية الهيكل والتثبيت:</strong> في حال توفير الهيكل الحديدي من قبل العميل، فإن الشركة غير مسؤولة عن أي مشاكل ناتجة عن ضعف الهيكل أو عدم مطابقته للمواصفات الفنية.</li>
+                <li><strong>مواعيد التنفيذ:</strong> تبدأ مدة التنفيذ بعد اعتماد المقاسات النهائية واستلام الدفعة المقدمة وتوفير الموقع جاهزًا للتركيب.</li>
+                <li><strong>التعديلات بعد الاعتماد:</strong> أي تعديل في المقاسات أو التصميم أو موقع التركيب بعد اعتماد الطلب قد يترتب عليه تكلفة إضافية ومدة تنفيذ إضافية.</li>
+                <li><strong>الضمان:</strong> يشمل الضمان الأعطال الفنية الناتجة عن عيوب التصنيع فقط، ولا يشمل:
+                  <ul>
+                    <li>سوء الاستخدام</li>
+                    <li>انقطاع أو تذبذب الكهرباء</li>
+                    <li>الكسر أو التلف الناتج عن العوامل الخارجية</li>
+                    <li>دخول المياه بسبب التركيب في موقع غير مناسب</li>
+                  </ul>
+                </li>
+                <li><strong>الصيانة:</strong> الصيانة الدورية أو الزيارات الفنية خارج نطاق الضمان يتم احتسابها بشكل منفصل ما لم يتم الاتفاق خلاف ذلك.</li>
+                <li><strong>الكهرباء والحماية:</strong> يلتزم العميل بتوفير قاطع كهربائي مناسب، ونظام تأريض وحماية من التذبذب الكهربائي للحفاظ على سلامة الشاشة.</li>
+                <li><strong>ظروف الموقع:</strong> الشركة غير مسؤولة عن أي تأخير ناتج عن عدم جاهزية الموقع أو منع العمل من قبل إدارة الموقع أو الجهات الرسمية.</li>
+                <li><strong>آلية الدفع:</strong> تتم الدفعات حسب الاتفاق المبرم، ويحق للشركة إيقاف الأعمال أو عدم التسليم النهائي في حال تأخر السداد.</li>
+                <li><strong>التسليم والاستلام:</strong> يعتبر المشروع مستلمًا بعد تشغيل الشاشة وتجربتها واعتمادها من العميل أو ممثله.</li>
+                <li><strong>القوة القاهرة:</strong> لا تتحمل الشركة أي تأخير أو ضرر ناتج عن ظروف خارجة عن الإرادة مثل الأحوال الجوية أو القرارات الحكومية أو مشاكل الشحن الدولية.</li>
+                <li><strong>إخلاء المسؤولية:</strong> الشركة غير مسؤولة عن المحتوى المعروض على الشاشة بعد التسليم، ويتحمل العميل كامل المسؤولية القانونية عن المحتوى.</li>
+                <li><strong>سلامة المعدات:</strong> بعد التسليم، يتحمل العميل مسؤولية حماية الشاشة والمعدات من العبث أو الصدمات أو العوامل البيئية غير المناسبة.</li>
+                <li><strong>إلغاء الطلب:</strong> في حال إلغاء الطلب بعد بدء التصنيع أو التوريد، يحق للشركة خصم التكاليف الفعلية التي تم صرفها على المشروع.</li>
+              </ol>
+            </div>
+            </div>
+
+            <div class="quote-footer">
+              <div>
+                <div class="footer-brand">QUBIXSA — كيوبيكس السعودية</div>
+                <div class="footer-legal">جميع الأسعار <span id="pvFooterCurrency">بالريال السعودي</span> وتشمل ضريبة القيمة المضافة حيث ينطبق ذلك.</div>
+                <div class="footer-legal">هذا المستند سري ومخصص للجهة المعنية فقط — This document is confidential.</div>
+              </div>
+              <div style="display:flex; gap: 20px; align-items:flex-end;">
+                <div class="footer-contact">
+                  <div>الرياض، المملكة العربية السعودية</div>
+                  <div dir="ltr">+966 55 630 1055</div>
+                  <div>qubixsa1@gmail.com</div>
+                </div>
+                <div class="qr-box" style="text-align:center; position:relative; z-index:1;">
+                  <img id="pvQrCode" src="" alt="Scan to approve" style="width:68px; height:68px; display:block; border-radius: 6px; border: 1px solid rgba(232,76,43,0.2); padding:2px; background:#fff;" />
+                  <div style="font-size:7px; color:var(--color-primary); margin-top:5px; font-weight:800; letter-spacing:0.05em;">SCAN TO APPROVE</div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <template id="itemTemplate">
+    <div class="item-card">
+      <div class="item-top">
+        <div class="item-title">Quote item</div>
+        <button class="icon-btn remove-item" type="button" aria-label="Remove item">✕</button>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Code</label><input class="input item-code" /></div>
+        <div class="field"><label>Unit</label><input class="input item-unit" value="م²" /></div>
+      </div>
+      <div class="field"><label>Description</label><textarea class="textarea item-desc"></textarea></div>
+      <div class="grid grid-2">
+        <div class="field"><label>Quantity</label><input class="input item-qty" type="number" step="0.01" min="0" /></div>
+        <div class="field"><label>Unit price (<span class="currency-en">SAR</span>)</label><input class="input item-price" type="number" step="0.01" min="0" /></div>
+      </div>
+      <div class="helper item-total-label">Line total: <span class="currency-en">SAR</span> 0.00</div>
+    </div>
+  </template>
+
+  <script>
+    /* COMPANY_DEFAULTS — canonical Qubixsa profile */
+    const COMPANY = {
+      phone: '+966 55 630 1055',
+      email: 'qubixsa1@gmail.com',
+      location: 'الرياض، المملكة العربية السعودية',
+      beneficiary: 'مؤسسة المراحل التالية للمقاولات',
+      bankName: 'البنك الأهلي السعودي (SNB)',
+      accountNumber: '70500000644200',
+      iban: 'SA761000007050000644200',
+      swift: 'NCBKSAJE',
+      defaultIssuer: 'محمد عدلان',
+      vatRate: 15,
+      validityDays: 3,
+      vatNumber: '',
+      crNumber: ''
+    };
+
+    const STORAGE = {
+      draft: 'qubixsa-quote-draft',
+      seq: 'qubixsa-quote-seq',
+      clients: 'qubixsa-clients',
+      style: 'qubixsa-product-style'
+    };
+
+    const ITEM_TEMPLATES = {
+      led: { code: 'LED-P1.5-IND', unit: 'م²', qty: 1, price: 0, desc: 'شاشة LED داخلية عالية الدقة\n📐 المقاس حسب المشروع | 🔬 بكسل بيتش\n💡 SMD | ☀️ سطوع عالي | 🔄 معدل تحديث عالي' },
+      tv: { code: 'HG43BU800AUXUE', unit: 'حبة', qty: 1, price: 0, desc: 'شاشة سامسونج فندقية\n📐 43 بوصة | 4K UHD | Slim Crystal Display\n💡 HDR | 📡 WiFi + LAN + BT | 🔄 Tizen OS' },
+      install: { code: 'INST-SCREEN', unit: 'خدمة', qty: 1, price: 0, desc: 'برمجة وتركيب وربط الشاشات' },
+      novastar: { code: 'VP-NVS-VX1000', unit: 'جهاز', qty: 1, price: 0, desc: 'معالج فيديو Novastar\n📡 HDMI / DVI / SDI / DP' }
+    };
+
+    const els = {
+      itemsContainer: document.getElementById('itemsContainer'),
+      itemTemplate: document.getElementById('itemTemplate'),
+      addItemBtn: document.getElementById('addItemBtn'),
+      printBtn: document.getElementById('printBtn'),
+      sampleBtn: document.getElementById('sampleBtn'),
+      newBtn: document.getElementById('newBtn'),
+      duplicateBtn: document.getElementById('duplicateBtn'),
+      exportBtn: document.getElementById('exportBtn'),
+      saveStatus: document.getElementById('saveStatus'),
+      saveClientBtn: document.getElementById('saveClientBtn'),
+      clientLibrary: document.getElementById('clientLibrary'),
+      uiSubtotal: document.getElementById('uiSubtotal'),
+      uiVat: document.getElementById('uiVat'),
+      uiGrand: document.getElementById('uiGrand'),
+      previewItems: document.getElementById('previewItems'),
+      productImages: document.getElementById('productImages'),
+      productImagePreview: document.getElementById('productImagePreview'),
+      pvProductImages: document.getElementById('pvProductImages'),
+      toggleSpecs: document.getElementById('toggleSpecs'),
+      toggleDetailedTerms: document.getElementById('toggleDetailedTerms'),
+      toggleBank: document.getElementById('toggleBank'),
+      toggleImages: document.getElementById('toggleImages'),
+      previewSpecsSection: document.getElementById('previewSpecsSection'),
+      previewDetailedTermsSection: document.getElementById('previewDetailedTermsSection'),
+      previewBankSection: document.getElementById('previewBankSection'),
+      previewImagesSection: document.getElementById('previewImagesSection')
+    };
+
+    const fieldIds = [
+      'quoteNumber','issueDate','validityDays','vatRate','currency','clientName','clientVat','clientCr','clientLocation','projectName','clientPhone','clientEmail','issuerName',
+      'specPitch','specLamp','specModule','specResolution','specDensity','specMaintenance','specPanel','specModulesCount','specPanelRes','specWeight','specMaterial','specControl','specBrightness','specRefresh','specViewing','specLifespan','specPowerAvg','specPowerMax','specArea','specAreaNote','specMinView','specMinViewNote','specIpRating','specIpNote','specGrayscale','specGrayscaleNote',
+      'paymentTerms','deliveryTerms','warrantyTerms','vatNumber','crNumber','beneficiary','bankName','accountNumber','iban','swift',
+      'discountType','discountValue','internalNotes'
+    ];
+
+    const refs = Object.fromEntries(fieldIds.map(id => [id, document.getElementById(id)]));
+
+    let productStyle = 'led';
+    let saveTimer = null;
+    let imageDataUrls = [];
+
+    const sampleItems = [
+      { code:'LED-P1.5-IND', unit:'م²', qty:11.52, price:7100,
+        desc:'<strong>شاشة LED داخلية عالية الدقة — P1.5</strong><br><span style="font-size:10.5px;color:#666;line-height:2">📐 2.4م × 4.8م = <strong>11.52 م²</strong> &nbsp;&nbsp; 🔬 بكسل بيتش: 1.5مم<br>💡 SMD1515 &nbsp;|&nbsp; ☀️ 800 cd/m² &nbsp;|&nbsp; 🔄 3,840 Hz<br>🏗 ألومنيوم مصبوب &nbsp;|&nbsp; 🧲 صيانة أمامية مغناطيسية &nbsp;|&nbsp; 🖥 Novastar</span>' },
+      { code:'VP-NVS-VX1000', unit:'جهاز', qty:1, price:7800,
+        desc:'<strong>معالج فيديو Novastar VX1000</strong><br><span style="font-size:10.5px;color:#666;line-height:2">📡 HDMI / DVI / SDI / DP &nbsp;|&nbsp; 🎬 بث احترافي متكامل</span>' },
+      { code:'INST-IRON-ASM', unit:'خدمة', qty:1, price:14500,
+        desc:'<strong>تركيب الهيكل الحديدي وتوصيل الشاشة</strong><br><span style="font-size:10.5px;color:#666;line-height:2">🔩 تجميع Iron Frame &nbsp;|&nbsp; ⚡ توصيل &nbsp;|&nbsp; ✅ اختبار &nbsp;|&nbsp; 🚀 تشغيل تجريبي</span>' }
+    ];
+
+    const formatMoney = v => Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const emptyFallback = v => v && String(v).trim() ? v : '<span class="muted-empty">—</span>';
+    const todayStr = () => new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    function setStatus(text) { els.saveStatus.textContent = text; }
+
+    function showToast(msg, warn) {
+      document.querySelectorAll('.toast').forEach(t => t.remove());
+      const t = document.createElement('div');
+      t.className = 'toast' + (warn ? ' warn' : '');
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 4000);
+    }
+
+    function nextQuoteNumber(type) {
+      const d = new Date();
+      const yy = String(d.getFullYear()).slice(-2);
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const key = `${STORAGE.seq}-${yy}${mm}`;
+      let seq = parseInt(localStorage.getItem(key) || '0', 10) + 1;
+      localStorage.setItem(key, String(seq));
+      const pad = String(seq).padStart(3, '0');
+      return `QUB-${yy}${mm}-${pad}`;
+    }
+
+    function applyCompanyDefaults() {
+      refs.beneficiary.value = COMPANY.beneficiary;
+      refs.bankName.value = COMPANY.bankName;
+      refs.accountNumber.value = COMPANY.accountNumber;
+      refs.iban.value = COMPANY.iban;
+      refs.swift.value = COMPANY.swift;
+      refs.vatRate.value = COMPANY.vatRate;
+      refs.validityDays.value = COMPANY.validityDays;
+      refs.vatNumber.value = COMPANY.vatNumber || '';
+      refs.crNumber.value = COMPANY.crNumber || '';
+      if (!refs.issuerName.value.trim()) refs.issuerName.value = COMPANY.defaultIssuer;
+    }
+
+    function setupComparisonEvents() {
+      const chk = document.getElementById('compareQuoteCheckbox');
+      const tabsWrap = document.getElementById('optionTabsWrap');
+      const tabA = document.getElementById('tabOptionA');
+      const tabB = document.getElementById('tabOptionB');
+      const containerA = els.itemsContainer;
+      const containerB = document.getElementById('itemsContainerB');
+      
+      chk.addEventListener('change', () => {
+        const isCompare = chk.checked;
+        tabsWrap.style.display = isCompare ? 'flex' : 'none';
+        
+        if (isCompare) {
+          tabA.click();
+        } else {
+          containerA.style.display = 'grid';
+          containerB.style.display = 'none';
+        }
+        updateAll();
+      });
+      
+      tabA.addEventListener('click', () => {
+        tabA.classList.add('active');
+        tabB.classList.remove('active');
+        containerA.style.display = 'grid';
+        containerB.style.display = 'none';
+      });
+      
+      tabB.addEventListener('click', () => {
+        tabB.classList.add('active');
+        tabA.classList.remove('active');
+        containerB.style.display = 'grid';
+        containerA.style.display = 'none';
+        if (containerB.querySelectorAll('.item-card').length === 0) {
+          addItemB();
+        }
+      });
+    }
+
+    function addItem(item = { code: '', unit: 'حبة', qty: 1, price: 0, desc: '' }, container) {
+      const targetContainer = (container && container.nodeType) ? container : els.itemsContainer;
+      const node = els.itemTemplate.content.firstElementChild.cloneNode(true);
+      node.querySelector('.item-code').value = item.code || '';
+      node.querySelector('.item-unit').value = item.unit || 'حبة';
+      node.querySelector('.item-qty').value = item.qty ?? 1;
+      node.querySelector('.item-price').value = item.price ?? 0;
+      node.querySelector('.item-desc').value = item.desc
+        ? String(item.desc).replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '')
+        : '';
+      node.querySelector('.remove-item').addEventListener('click', () => { node.remove(); updateAll(); });
+      node.querySelectorAll('input, textarea').forEach(input => input.addEventListener('input', updateAll));
+      targetContainer.appendChild(node);
+      updateAll();
+    }
+
+    function addItemB(item) {
+      addItem(item, document.getElementById('itemsContainerB'));
+    }
+
+    function collectItems(container = els.itemsContainer) {
+      const isUsd = (refs.currency && refs.currency.value === 'USD');
+      const symEn = isUsd ? 'USD' : 'SAR';
+      return [...container.querySelectorAll('.item-card')].map(card => {
+        const code = card.querySelector('.item-code').value.trim();
+        const unit = card.querySelector('.item-unit').value.trim() || 'حبة';
+        const qty = parseFloat(card.querySelector('.item-qty').value || 0);
+        const price = parseFloat(card.querySelector('.item-price').value || 0);
+        const rawDesc = card.querySelector('.item-desc').value.trim();
+        const desc = rawDesc.replace(/\n/g, '<br>');
+        const total = Math.round(qty * price * 100) / 100;
+        card.querySelector('.item-total-label').innerHTML = `Line total: <span class="currency-en">${symEn}</span> ${formatMoney(total)}`;
+        const currencyEnEls = card.querySelectorAll('.currency-en');
+        currencyEnEls.forEach(el => el.textContent = symEn);
+        return { code, unit, qty, price, desc, total };
+      });
+    }
+
+    function collectItemsB() {
+      return collectItems(document.getElementById('itemsContainerB'));
+    }
+
+    function calcTotals(items, data) {
+      const subtotal = items.reduce((s, i) => s + i.total, 0);
+      let discount = 0;
+      const dType = data.discountType || 'none';
+      const dVal = parseFloat(data.discountValue || 0);
+      if (dType === 'percent') discount = subtotal * (dVal / 100);
+      if (dType === 'fixed') discount = dVal;
+      discount = Math.min(discount, subtotal);
+      const afterDiscount = subtotal - discount;
+      const vatRate = parseFloat(data.vatRate || 0) / 100;
+      const vat = afterDiscount * vatRate;
+      const grand = afterDiscount + vat;
+      return { subtotal, discount, afterDiscount, vat, grand };
+    }
+
+    function setPreflight(ok, id) {
+      const row = document.getElementById(id);
+      if (!row) return;
+      row.classList.toggle('ok', ok);
+      row.classList.toggle('bad', !ok);
+      row.querySelector('.mark').textContent = ok ? '✓' : '○';
+    }
+
+    function runValidation(data, items, totals) {
+      const hasClient = !!(data.clientName && data.clientName.trim());
+      const hasQuote = !!(data.quoteNumber && data.quoteNumber.trim() && data.issueDate && data.issueDate.trim());
+      const hasItems = items.some(i => i.qty > 0 && i.price > 0);
+      const hasTotals = totals.grand > 0;
+      setPreflight(hasClient, 'pfClient');
+      setPreflight(hasQuote, 'pfQuote');
+      setPreflight(hasItems, 'pfItems');
+      setPreflight(hasTotals, 'pfTotals');
+      return { ok: hasClient && hasQuote && hasItems && hasTotals, hasClient, hasQuote, hasItems, hasTotals };
+    }
+
+    function applySectionToggles() {
+      els.previewSpecsSection.classList.toggle('section-hidden', !els.toggleSpecs.checked);
+      els.previewDetailedTermsSection.classList.toggle('section-hidden', !els.toggleDetailedTerms.checked);
+      els.previewBankSection.classList.toggle('section-hidden', !els.toggleBank.checked);
+      els.previewImagesSection.classList.toggle('section-hidden', !els.toggleImages.checked || imageDataUrls.length === 0);
+    }
+
+    function updateProductImagesPreview() {
+      els.pvProductImages.innerHTML = imageDataUrls.map(src =>
+        `<img src="${src}" alt="Product" />`
+      ).join('');
+      applySectionToggles();
+    }
+
+    function renderProductImagePreview(files) {
+      els.productImagePreview.innerHTML = '';
+      imageDataUrls = [];
+      if (!files || !files.length) { updateProductImagesPreview(); return; }
+      Array.from(files).slice(0, 3).forEach(file => {
+        const img = document.createElement('img');
+        img.alt = file.name;
+        img.style.cssText = 'width:100%;height:120px;object-fit:cover;border-radius:12px;border:1px solid #e5e0d8;';
+        const reader = new FileReader();
+        reader.onload = e => {
+          img.src = e.target.result;
+          imageDataUrls.push(e.target.result);
+          updateProductImagesPreview();
+        };
+        reader.readAsDataURL(file);
+        els.productImagePreview.appendChild(img);
+      });
+    }
+
+    function updatePreviewFieldsGeneric(data, items, totals, suffix) {
+      document.getElementById('pvSubtotal' + suffix).textContent = formatMoney(totals.subtotal);
+      document.getElementById('pvAfterDiscount' + suffix).textContent = formatMoney(totals.afterDiscount);
+      document.getElementById('pvVat' + suffix).textContent = formatMoney(totals.vat);
+      document.getElementById('pvGrand' + suffix).textContent = formatMoney(totals.grand);
+      
+      const discRow = document.getElementById('pvDiscountRow' + suffix);
+      if (totals.discount > 0) {
+        discRow.style.display = '';
+        const label = data.discountType === 'percent' ? `خصم (${data.discountValue}%)` : 'خصم (مبلغ ثابت)';
+        document.getElementById('pvDiscountLabel' + suffix).textContent = label;
+        document.getElementById('pvDiscount' + suffix).textContent = '− ' + formatMoney(totals.discount);
+      } else {
+        discRow.style.display = 'none';
+      }
+      
+      if (suffix === '') {
+        document.getElementById('pvClientName').innerHTML = emptyFallback(data.clientName);
+        
+        ['ClientVat', 'ClientCr', 'ClientLocation'].forEach(field => {
+          const val = data['c' + field.slice(1)];
+          const row = document.getElementById('pv' + field + 'Row');
+          if (row) {
+            if (val && val.trim()) {
+              row.style.display = '';
+              document.getElementById('pv' + field).innerHTML = val;
+            } else {
+              row.style.display = 'none';
+            }
+          }
+        });
+
+        document.getElementById('pvClientPhone').innerHTML = emptyFallback(data.clientPhone);
+        document.getElementById('pvClientEmail').innerHTML = emptyFallback(data.clientEmail);
+        document.getElementById('pvProjectName').innerHTML = emptyFallback(data.projectName);
+        document.getElementById('pvQuoteNumber').textContent = data.quoteNumber || '—';
+        document.getElementById('pvIssueDate').textContent = data.issueDate || '—';
+        document.getElementById('pvVatNumber').innerHTML = emptyFallback(data.vatNumber);
+        document.getElementById('pvCrNumber').innerHTML = emptyFallback(data.crNumber);
+        document.getElementById('pvValidity').textContent = `⏱ ${data.validityDays} أيام عمل`;
+        document.getElementById('pvValidityText').innerHTML =
+          `هذا العرض ساري لمدة <strong>${data.validityDays} أيام عمل</strong> من تاريخ الإصدار. يُعدّ أي تأخر في القبول إلغاءً ضمنياً للعرض.`;
+        document.getElementById('pvVatRateLabel').textContent = data.vatRate;
+        document.getElementById('pvVatRateLabelB').textContent = data.vatRate;
+        document.getElementById('pvPaymentTerms').textContent = data.paymentTerms;
+        document.getElementById('pvDeliveryTerms').textContent = data.deliveryTerms;
+        document.getElementById('pvWarrantyTerms').textContent = data.warrantyTerms;
+        document.getElementById('pvBeneficiary').textContent = data.beneficiary;
+        document.getElementById('pvBankName').textContent = data.bankName;
+        document.getElementById('pvAccount').textContent = data.accountNumber;
+        document.getElementById('pvIban').textContent = data.iban;
+        document.getElementById('pvSwift').textContent = data.swift;
+        document.getElementById('pvBankQuoteNumber').textContent = data.quoteNumber || '—';
+        document.getElementById('pvIssuer').textContent = data.issuerName;
+        document.getElementById('pvClientAcceptance').innerHTML = emptyFallback(data.clientName);
+        
+        const waLink = `https://wa.me/966556301055?text=${encodeURIComponent(`Hello Qubixsa team, I approve Quote ${data.quoteNumber || ''} and I am ready to proceed.`)}`;
+        document.getElementById('pvQrCode').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=1&data=${encodeURIComponent(waLink)}`;
+        
+        ['Pitch','Lamp','Module','Resolution','Density','Maintenance','Panel','ModulesCount','PanelRes','Weight','Material','Control','Brightness','Refresh','Viewing','Lifespan','PowerAvg','PowerMax','Area','AreaNote','MinView','MinViewNote','IpRating','IpNote','Grayscale','GrayscaleNote'].forEach(k => {
+          const el = document.getElementById('pvSpec' + k);
+          if (el) el.textContent = data['spec' + k] || '';
+        });
+        const isUsd = (data.currency === 'USD');
+        const symEn = isUsd ? 'USD' : 'SAR';
+        els.uiSubtotal.innerHTML = `<span class="currency-en">${symEn}</span> ${formatMoney(totals.subtotal)}`;
+        els.uiVat.innerHTML = `<span class="currency-en">${symEn}</span> ${formatMoney(totals.vat)}`;
+        els.uiGrand.innerHTML = `<span class="currency-en">${symEn}</span> ${formatMoney(totals.grand)}`;
+      }
+    }
+
+    function updateItemsPreviewGeneric(items, tbodyId) {
+      document.getElementById(tbodyId).innerHTML = items.map((item, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td class="code">${item.code || '—'}</td>
+          <td class="desc">${item.desc || '<span class="muted-empty">—</span>'}</td>
+          <td>${item.qty || 0}</td>
+          <td>${item.unit || '—'}</td>
+          <td class="amount">${formatMoney(item.price)}</td>
+          <td class="amount">${formatMoney(item.total)}</td>
+        </tr>`).join('');
+    }
+
+    function getFormState() {
+      const data = Object.fromEntries(fieldIds.map(id => [id, refs[id].value]));
+      const items = collectItems().map(({ code, unit, qty, price, desc }) => ({ code, unit, qty, price, desc }));
+      const itemsB = collectItemsB().map(({ code, unit, qty, price, desc }) => ({ code, unit, qty, price, desc }));
+      const isComparison = document.getElementById('compareQuoteCheckbox').checked;
+      return {
+        data, items, itemsB, isComparison, productStyle,
+        toggles: {
+          specs: els.toggleSpecs.checked,
+          detailedTerms: els.toggleDetailedTerms.checked,
+          bank: els.toggleBank.checked,
+          images: els.toggleImages.checked
+        },
+        imageDataUrls
+      };
+    }
+
+    function setFormState(state) {
+      if (!state) return;
+      Object.entries(state.data || {}).forEach(([k, v]) => { if (refs[k]) refs[k].value = v; });
+      productStyle = state.productStyle || 'led';
+      document.querySelectorAll('#productStyleToggle .chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.style === productStyle);
+      });
+      if (state.toggles) {
+        els.toggleSpecs.checked = state.toggles.specs !== false;
+        els.toggleDetailedTerms.checked = state.toggles.detailedTerms !== false;
+        els.toggleBank.checked = state.toggles.bank !== false;
+        els.toggleImages.checked = !!state.toggles.images;
+      }
+      
+      const compareCheckbox = document.getElementById('compareQuoteCheckbox');
+      compareCheckbox.checked = !!state.isComparison;
+      document.getElementById('optionTabsWrap').style.display = state.isComparison ? 'flex' : 'none';
+      
+      imageDataUrls = state.imageDataUrls || [];
+      els.itemsContainer.innerHTML = '';
+      (state.items || []).forEach(item => addItem(item, els.itemsContainer));
+      if (!state.items || !state.items.length) addItem(undefined, els.itemsContainer);
+      
+      const containerB = document.getElementById('itemsContainerB');
+      containerB.innerHTML = '';
+      (state.itemsB || []).forEach(item => addItem(item, containerB));
+      
+      if (state.isComparison) {
+        document.getElementById('tabOptionA').classList.add('active');
+        document.getElementById('tabOptionB').classList.remove('active');
+        els.itemsContainer.style.display = 'grid';
+        containerB.style.display = 'none';
+      } else {
+        els.itemsContainer.style.display = 'grid';
+        containerB.style.display = 'none';
+      }
+      
+      applyPresetSections(productStyle, false);
+      updateProductImagesPreview();
+      updateAll();
+    }
+
+    function saveDraft() {
+      try {
+        localStorage.setItem(STORAGE.draft, JSON.stringify(getFormState()));
+        setStatus('Draft saved');
+      } catch (e) { setStatus('Draft too large'); }
+    }
+
+    function scheduleSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveDraft, 500);
+    }
+
+    function applyPresetSections(style, resetFields) {
+      const showLedSpecs = style === 'led';
+      els.toggleSpecs.checked = showLedSpecs || style === 'lcd';
+      els.toggleDetailedTerms.checked = style === 'led';
+      if (style === 'lcd') {
+        if (resetFields) {
+          refs.specPitch.value = '4K UHD';
+          refs.specLamp.value = 'Crystal / AirSlim';
+          refs.specModule.value = 'حسب المقاس';
+          refs.specResolution.value = '3840 × 2160';
+          refs.specPanel.value = '43″ – 65″';
+          refs.specWeight.value = '—';
+          refs.specBrightness.value = 'HDR';
+          refs.specRefresh.value = 'Tizen OS';
+          refs.specViewing.value = 'WiFi + LAN + BT';
+          refs.specPowerAvg.value = 'Hospitality TV';
+          refs.specPowerMax.value = 'Samsung';
+          refs.specArea.value = 'حسب الطلب';
+        }
+      }
+      applySectionToggles();
+    }
+
+    function loadPreset(style, resetFields = true) {
+      productStyle = style;
+      localStorage.setItem(STORAGE.style, style);
+      document.querySelectorAll('#productStyleToggle .chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.style === style);
+      });
+      applyPresetSections(style, resetFields);
+      if (resetFields && style === 'led') {
+        refs.specPitch.value = '';
+        refs.specLamp.value = '';
+        refs.specModule.value = '';
+        refs.specResolution.value = '';
+        refs.specDensity.value = '';
+        refs.specMaintenance.value = '';
+        refs.specPanel.value = '';
+        refs.specModulesCount.value = '';
+        refs.specPanelRes.value = '';
+        refs.specWeight.value = '';
+        refs.specMaterial.value = '';
+        refs.specControl.value = '';
+        refs.specBrightness.value = '';
+        refs.specRefresh.value = '';
+        refs.specViewing.value = '';
+        refs.specLifespan.value = '';
+        refs.specPowerAvg.value = '';
+        refs.specPowerMax.value = '';
+        refs.specArea.value = '';
+        refs.specAreaNote.value = '';
+        refs.specMinView.value = '';
+        refs.specMinViewNote.value = '';
+        refs.specIpRating.value = '';
+        refs.specIpNote.value = '';
+        refs.specGrayscale.value = '';
+        refs.specGrayscaleNote.value = '';
+      }
+      updateAll();
+    }
+
+    function updateAll() {
+      const data = Object.fromEntries(fieldIds.map(id => [id, refs[id].value]));
+      const itemsA = collectItems();
+      const totalsA = calcTotals(itemsA, data);
+      
+      const isCompare = document.getElementById('compareQuoteCheckbox').checked;
+      
+      updateItemsPreviewGeneric(itemsA, 'previewItems');
+      updatePreviewFieldsGeneric(data, itemsA, totalsA, '');
+      
+      if (isCompare) {
+        const itemsB = collectItemsB();
+        const totalsB = calcTotals(itemsB, data);
+        
+        updateItemsPreviewGeneric(itemsB, 'previewItemsB');
+        updatePreviewFieldsGeneric(data, itemsB, totalsB, 'B');
+        
+        document.getElementById('pvOptionBSection').classList.remove('section-hidden');
+        document.getElementById('pvHdrA').textContent = '🖥 تفاصيل البنود والأسعار — الخيار أ (Option A)';
+        
+        document.getElementById('sidebarTotalsSingle').style.display = 'none';
+        document.getElementById('sidebarTotalsCompare').style.display = 'block';
+        
+        const isUsd = (data.currency === 'USD');
+        const symEn = isUsd ? 'USD' : 'SAR';
+        
+        document.getElementById('uiSubtotalA').innerHTML = `<span class="currency-en">${symEn}</span> ${formatMoney(totalsA.subtotal)}`;
+        document.getElementById('uiVatA').innerHTML = `<span class="currency-en">${symEn}</span> ${formatMoney(totalsA.vat)}`;
+        document.getElementById('uiGrandA').innerHTML = `<span class="currency-en">${symEn}</span> ${formatMoney(totalsA.grand)}`;
+        
+        document.getElementById('uiSubtotalB').innerHTML = `<span class="currency-en">${symEn}</span> ${formatMoney(totalsB.subtotal)}`;
+        document.getElementById('uiVatB').innerHTML = `<span class="currency-en">${symEn}</span> ${formatMoney(totalsB.vat)}`;
+        document.getElementById('uiGrandB').innerHTML = `<span class="currency-en">${symEn}</span> ${formatMoney(totalsB.grand)}`;
+      } else {
+        document.getElementById('pvOptionBSection').classList.add('section-hidden');
+        document.getElementById('pvHdrA').textContent = '🖥 تفاصيل البنود والأسعار';
+        
+        document.getElementById('sidebarTotalsSingle').style.display = 'block';
+        document.getElementById('sidebarTotalsCompare').style.display = 'none';
+      }
+      
+      const isUsd = (data.currency === 'USD');
+      const symAr = isUsd ? '$' : 'ر.س';
+      document.querySelectorAll('.currency-ar').forEach(el => el.textContent = symAr);
+      
+      document.getElementById('pvBankCurrency').textContent = isUsd ? 'دولار أمريكي (USD)' : 'ريال سعودي (SAR)';
+      document.getElementById('pvFooterCurrency').textContent = isUsd ? 'بالدولار الأمريكي' : 'بالريال السعودي';
+      
+      applySectionToggles();
+      const v = runValidation(data, itemsA, totalsA);
+      
+      if (isCompare) {
+        const itemsB = collectItemsB();
+        const hasItemsB = itemsB.some(i => i.qty > 0 && i.price > 0);
+        const ok = v.ok && hasItemsB;
+        setPreflight(hasItemsB, 'pfItems');
+        setStatus(ok ? 'Ready to print' : 'Complete checklist to print');
+      } else {
+        setStatus(v.ok ? 'Ready to print' : 'Complete checklist to print');
+      }
+      
+      scheduleSave();
+    }
+
+    function loadSample() {
+      document.getElementById('compareQuoteCheckbox').checked = false;
+      document.getElementById('optionTabsWrap').style.display = 'none';
+      document.getElementById('itemsContainerB').innerHTML = '';
+      els.itemsContainer.style.display = 'grid';
+
+      refs.quoteNumber.value = nextQuoteNumber('led');
+      refs.issueDate.value = todayStr();
+      applyCompanyDefaults();
+      refs.clientName.value = 'فنون التراث';
+      refs.projectName.value = 'جدار LED داخلي عالي الدقة P1.5 – 2.4م × 4.8م';
+      refs.clientPhone.value = '';
+      refs.clientEmail.value = '';
+      refs.issuerName.value = 'عبد الله عثمان';
+      refs.paymentTerms.value = '100% عند التعميد';
+      refs.deliveryTerms.value = '3 أيام من استلام الدفعة المقدمة';
+      refs.warrantyTerms.value = 'ضمان شامل سنتان — غير شاملة سوء الاستخدام';
+      refs.discountType.value = 'none';
+      refs.discountValue.value = '0';
+      els.itemsContainer.innerHTML = '';
+      sampleItems.forEach(addItem);
+      loadPreset('led', true);
+    }
+
+    function newQuote() {
+      document.getElementById('compareQuoteCheckbox').checked = false;
+      document.getElementById('optionTabsWrap').style.display = 'none';
+      document.getElementById('itemsContainerB').innerHTML = '';
+      els.itemsContainer.style.display = 'grid';
+
+      refs.quoteNumber.value = nextQuoteNumber(productStyle);
+      refs.issueDate.value = todayStr();
+      refs.validityDays.value = COMPANY.validityDays;
+      refs.vatRate.value = COMPANY.vatRate;
+      refs.clientName.value = '';
+      refs.projectName.value = '';
+      refs.clientPhone.value = '';
+      refs.clientEmail.value = '';
+      refs.discountType.value = 'none';
+      refs.discountValue.value = '0';
+      applyCompanyDefaults();
+      els.itemsContainer.innerHTML = '';
+      addItem();
+      updateAll();
+    }
+
+    function duplicateQuote() {
+      const n = nextQuoteNumber(productStyle);
+      refs.quoteNumber.value = n;
+      refs.issueDate.value = todayStr();
+      updateAll();
+      showToast('Duplicated — new quote number assigned');
+    }
+
+    function exportStandaloneHtml() {
+      const data = Object.fromEntries(fieldIds.map(id => [id, refs[id].value]));
+      const itemsA = collectItems();
+      const totalsA = calcTotals(itemsA, data);
+      const isCompare = document.getElementById('compareQuoteCheckbox').checked;
+      
+      const v = runValidation(data, itemsA, totalsA);
+      let ok = v.ok;
+      if (isCompare) {
+        const itemsB = collectItemsB();
+        const hasItemsB = itemsB.some(i => i.qty > 0 && i.price > 0);
+        ok = ok && hasItemsB;
+      }
+      if (!ok) { showToast('Complete the checklist before export', true); return; }
+      
+      const quoteHtml = document.getElementById('quotePreview').outerHTML;
+      const styles = [...document.querySelectorAll('style')].map(s => s.textContent).join('\n');
+      const exportCss = `
+        /* ── Base HTML view (not print) ── */
+        body{font-family:Cairo,sans-serif;background:#f7f5f1;margin:0;padding:20px 0}
+        .quote-page{width:100%;max-width:760px;margin:0 auto;padding:12mm 14mm;box-sizing:border-box;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(31,26,19,0.10);position:relative;overflow:hidden}
+        .quote-page::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e84c2b' fill-opacity='0.02'%3E%3Cpath d='M10 10h10v10H10zm20 20h10v10H30zm20-20h10v10H50zM70 30h10v10H70zM10 50h10v10H10zm40 0h10v10H50zm20 20h10v10H70zM30 70h10v10H30zM50 90h10v10H50zM10 90h10v10H10zm80-40h10v10H90zm0 40h10v10H90zM90 10h10v10H90z'/%3E%3C/g%3E%3C/svg%3E"); pointer-events: none; z-index: 0; }
+        /* ── Mobile view (≤680px) — covers WhatsApp in-app browser & most phones ── */
+        @media screen and (max-width:680px){
+          body{padding:0}
+          .quote-page{padding:16px 14px;border-radius:0;box-shadow:none;overflow:visible;max-width:100%}
+          .quote-header{flex-direction:column-reverse;align-items:flex-start}
+          .quote-brand{text-align:right;width:100%}
+          .meta-row,.spec-grid,.terms-grid,.bank-grid,.auth-wrap{grid-template-columns:1fr !important}
+          .spec-bottom{grid-template-columns:1fr 1fr !important}
+          /* Table horizontal scroll instead of clipping */
+          #pvOptionASection,#pvOptionBSection{overflow-x:auto;-webkit-overflow-scrolling:touch}
+          .items-table{min-width:480px}
+          .items-table th,.items-table td{font-size:0.65rem;padding:7px 4px}
+          .totals-table{min-width:100%}
+          .totals-wrap{padding:8px 0 8px 8px}
+          .quote-product-images{grid-template-columns:1fr 1fr !important}
+          .legal-strip{flex-direction:column;gap:6px}
+          .watermark{font-size:56px}
+        }
+        /* ── Print / Save as PDF ── */
+        @media print{
+          @page{size:A4 portrait;margin:8mm}
+          html,body{background:#fff !important;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+          .quote-page{width:100%;max-width:none;padding:8mm 10mm;margin:0;background:#fff;border-radius:0;box-shadow:none;overflow:visible}
+          .totals-wrap,.spec-wrap,.terms-wrap,.bank-wrap,.auth-wrap,.auth-card,.client-box,.info-box{page-break-inside:avoid}
+          .sec-hdr,.quote-header,.meta-row,.legal-strip{page-break-inside:avoid}
+          .sec-hdr{page-break-after:avoid}
+          .items-table tr{break-inside:avoid !important;page-break-inside:avoid !important;page-break-after:auto}
+          .items-table thead{display:table-header-group}
+          /* Items section — must not be trapped in a scroll container when printing */
+          #pvOptionASection,#pvOptionBSection,.items-table{overflow:visible !important;break-inside:auto !important;page-break-inside:auto !important;page-break-before:auto !important}
+          /* Detailed terms page placement and layout rules */
+          #previewDetailedTermsSection{break-before:page !important;page-break-before:always !important}
+          .detailed-terms-wrap{padding:8px 12px !important;line-height:1.55 !important}
+          .detailed-terms-list>li{padding:3px 0 !important;break-inside:avoid}
+        }
+      `;
+      const full = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${refs.quoteNumber.value}</title>
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+        <style>${exportCss}\n${styles}</style></head><body>${quoteHtml}</body></html>`;
+      const blob = new Blob([full], { type: 'text/html;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${refs.quoteNumber.value || 'quote'}.html`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast('HTML exported');
+    }
+
+    function printQuote() {
+      const data = Object.fromEntries(fieldIds.map(id => [id, refs[id].value]));
+      const itemsA = collectItems();
+      const totalsA = calcTotals(itemsA, data);
+      const isCompare = document.getElementById('compareQuoteCheckbox').checked;
+      
+      const v = runValidation(data, itemsA, totalsA);
+      let ok = v.ok;
+      if (isCompare) {
+        const itemsB = collectItemsB();
+        const hasItemsB = itemsB.some(i => i.qty > 0 && i.price > 0);
+        ok = ok && hasItemsB;
+      }
+      if (!ok) {
+        showToast('Complete required fields before printing (see checklist)', true);
+        return;
+      }
+      window.print();
+    }
+
+    function renderClientLibrary() {
+      let clients = [];
+      try { clients = JSON.parse(localStorage.getItem(STORAGE.clients) || '[]'); } catch (e) {}
+      els.clientLibrary.innerHTML = clients.map((c, i) =>
+        `<button type="button" data-idx="${i}">${c.name}</button>`
+      ).join('');
+      els.clientLibrary.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const c = clients[parseInt(btn.dataset.idx, 10)];
+          refs.clientName.value = c.name || '';
+          refs.clientPhone.value = c.phone || '';
+          refs.clientEmail.value = c.email || '';
+          refs.projectName.value = c.project || '';
+          updateAll();
+        });
+      });
+    }
+
+    function saveClient() {
+      const name = refs.clientName.value.trim();
+      if (!name) { showToast('Enter client name first', true); return; }
+      let clients = [];
+      try { clients = JSON.parse(localStorage.getItem(STORAGE.clients) || '[]'); } catch (e) {}
+      clients = clients.filter(c => c.name !== name);
+      clients.unshift({
+        name,
+        phone: refs.clientPhone.value,
+        email: refs.clientEmail.value,
+        project: refs.projectName.value
+      });
+      clients = clients.slice(0, 20);
+      localStorage.setItem(STORAGE.clients, JSON.stringify(clients));
+      renderClientLibrary();
+      showToast('Client saved');
+    }
+
+    function openEmailModal() {
+      const data = Object.fromEntries(fieldIds.map(id => [id, refs[id].value]));
+      const items = collectItems();
+      const totals = calcTotals(items, data);
+      
+      const clientName = data.clientName ? data.clientName.trim() : 'العميل الكريم';
+      const projectName = data.projectName ? data.projectName.trim() : 'مشروع شاشات عرض';
+      const quoteNumber = data.quoteNumber || '—';
+      
+      const currency = data.currency || 'SAR';
+      const symAr = currency === 'USD' ? '$' : 'ر.س';
+      
+      let grandTotal = formatMoney(totals.grand) + ' ' + symAr;
+      const compareCheckbox = document.getElementById('compareQuoteCheckbox');
+      if (compareCheckbox && compareCheckbox.checked) {
+        const itemsB = collectItemsB();
+        const totalsB = calcTotals(itemsB, data);
+        grandTotal = `الخيار أ (Option A): ${formatMoney(totals.grand)} ${symAr} | الخيار ب (Option B): ${formatMoney(totalsB.grand)} ${symAr}`;
+      }
+      
+      const issuerName = data.issuerName || 'كيوبيكس السعودية';
+
+      const subject = `عرض سعر شاشات / Qubixsa Quote - ${quoteNumber} - ${clientName}`;
+      
+      const body = `عزيزنا العميل في ${clientName}،
+Dear Customer at ${clientName},
+
+تحية طيبة وبعد،
+Greetings,
+
+يسعدنا أن نقدم لكم عرض السعر من كيوبيكس السعودية (QUBIXSA) الخاص بمشروع:
+"${projectName}"
+
+رقم العرض: ${quoteNumber}
+المبلغ الإجمالي شامل الضريبة: ${grandTotal}.
+
+تجدون كافة التفاصيل والمواصفات الفنية والشروط والأحكام مرفقة في ملف PDF المرفق.
+
+We are pleased to submit our quotation for the project:
+"${projectName}"
+
+Quote Number: ${quoteNumber}
+Total Amount (incl. VAT): ${grandTotal}.
+
+Please find the complete details, technical specs, and terms in the attached PDF.
+
+للإجابة على أي استفسارات، يسعدنا تواصلكم معنا.
+For any inquiries, please feel free to contact us.
+
+مع تحياتنا،
+Best regards,
+
+${issuerName}
+كيوبيكس السعودية | QUBIXSA`;
+
+      document.getElementById('emailSubject').value = subject;
+      document.getElementById('emailBody').value = body;
+      document.getElementById('emailModal').classList.add('active');
+    }
+
+    function copyText(elId, successMsg) {
+      const el = document.getElementById(elId);
+      el.select();
+      el.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(el.value).then(() => {
+        showToast(successMsg);
+      }).catch(err => {
+        showToast('Failed to copy to clipboard', true);
+      });
+    }
+
+    function openCsvModal() {
+      document.getElementById('csvPasteArea').value = '';
+      document.getElementById('csvParseCount').textContent = '';
+      document.getElementById('csvModal').classList.add('active');
+    }
+
+    function parseCsvInput(text) {
+      const lines = text.split('\n');
+      const items = [];
+      lines.forEach(line => {
+        if (!line.trim()) return;
+        let parts = line.split('\t');
+        if (parts.length <= 1) {
+          parts = line.split(',');
+        }
+        parts = parts.map(p => p.trim());
+        if (parts.length > 0) {
+          const code = parts[0] || '';
+          const desc = parts[1] || '';
+          const qty = parseFloat(parts[2]) || 0;
+          const unit = parts[3] || 'حبة';
+          const price = parseFloat(parts[4]) || 0;
+          if (code || desc || qty || price) {
+            items.push({ code, desc, qty, unit, price });
+          }
+        }
+      });
+      return items;
+    }
+
+    function handleCsvInput() {
+      const text = document.getElementById('csvPasteArea').value;
+      const parsed = parseCsvInput(text);
+      document.getElementById('csvParseCount').textContent = parsed.length > 0 ? `${parsed.length} items detected` : '';
+    }
+
+    function processCsvImport() {
+      const text = document.getElementById('csvPasteArea').value;
+      const parsed = parseCsvInput(text);
+      if (parsed.length === 0) {
+        showToast('No valid items found to import', true);
+        return;
+      }
+      
+      const compareCheckbox = document.getElementById('compareQuoteCheckbox');
+      const isComparison = compareCheckbox && compareCheckbox.checked;
+      const isOptionBActive = isComparison && document.getElementById('tabOptionB').classList.contains('active');
+      
+      parsed.forEach(item => {
+        if (isOptionBActive && typeof addItemB === 'function') {
+          addItemB(item);
+        } else {
+          addItem(item);
+        }
+      });
+      
+      document.getElementById('csvModal').classList.remove('active');
+      showToast(`Successfully imported ${parsed.length} items!`);
+      updateAll();
+    }
+
+    function init() {
+      applyCompanyDefaults();
+      renderClientLibrary();
+      setupComparisonEvents();
+
+      document.querySelectorAll('#productStyleToggle .chip').forEach(chip => {
+        chip.addEventListener('click', () => loadPreset(chip.dataset.style, false));
+      });
+
+      document.querySelectorAll('.item-templates [data-template]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const t = ITEM_TEMPLATES[btn.dataset.template];
+          if (t) {
+            const compareCheckbox = document.getElementById('compareQuoteCheckbox');
+            const isComparison = compareCheckbox && compareCheckbox.checked;
+            const isOptionBActive = isComparison && document.getElementById('tabOptionB').classList.contains('active');
+            if (isOptionBActive) {
+              addItemB(t);
+            } else {
+              addItem(t);
+            }
+          }
+        });
+      });
+
+      [els.toggleSpecs, els.toggleDetailedTerms, els.toggleBank, els.toggleImages].forEach(el => {
+        el.addEventListener('change', () => { applySectionToggles(); scheduleSave(); });
+      });
+
+      els.addItemBtn.addEventListener('click', () => {
+        const compareCheckbox = document.getElementById('compareQuoteCheckbox');
+        const isComparison = compareCheckbox && compareCheckbox.checked;
+        const isOptionBActive = isComparison && document.getElementById('tabOptionB').classList.contains('active');
+        if (isOptionBActive) {
+          addItemB();
+        } else {
+          addItem();
+        }
+      });
+      els.printBtn.addEventListener('click', printQuote);
+      els.exportBtn.addEventListener('click', exportStandaloneHtml);
+      els.sampleBtn.addEventListener('click', loadSample);
+      els.newBtn.addEventListener('click', newQuote);
+      els.duplicateBtn.addEventListener('click', duplicateQuote);
+      els.saveClientBtn.addEventListener('click', saveClient);
+      document.getElementById('emailHelperBtn').addEventListener('click', openEmailModal);
+      document.getElementById('closeEmailModal').addEventListener('click', () => {
+        document.getElementById('emailModal').classList.remove('active');
+      });
+      document.getElementById('copySubjectBtn').addEventListener('click', () => copyText('emailSubject', 'Subject copied!'));
+      document.getElementById('copyBodyBtn').addEventListener('click', () => copyText('emailBody', 'Body copied!'));
+
+      document.getElementById('importCsvBtn').addEventListener('click', openCsvModal);
+      document.getElementById('closeCsvModal').addEventListener('click', () => {
+        document.getElementById('csvModal').classList.remove('active');
+      });
+      document.getElementById('cancelCsvBtn').addEventListener('click', () => {
+        document.getElementById('csvModal').classList.remove('active');
+      });
+      document.getElementById('csvPasteArea').addEventListener('input', handleCsvInput);
+      document.getElementById('processCsvBtn').addEventListener('click', processCsvImport);
+      els.productImages.addEventListener('change', e => renderProductImagePreview(e.target.files));
+      Object.values(refs).forEach(el => el && el.addEventListener('input', updateAll));
+      Object.values(refs).forEach(el => el && el.addEventListener('change', updateAll));
+
+      const draft = localStorage.getItem(STORAGE.draft);
+      const savedStyle = localStorage.getItem(STORAGE.style) || 'led';
+      if (draft && confirm('Resume your last saved draft?')) {
+        try { setFormState(JSON.parse(draft)); updateAll(); }
+        catch (e) { loadSample(); }
+      } else {
+        productStyle = savedStyle;
+        loadSample();
+      }
+    }
+
+    init();
+
+  </script>
+  <!-- Email Helper Modal -->
+  <div class="modal-overlay" id="emailModal">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="font-size:var(--text-lg); font-weight:800; display:flex; align-items:center; gap:0.5rem;">
+          <span>📧</span> Email Helper
+        </h3>
+        <button id="closeEmailModal" class="icon-btn" type="button" aria-label="Close modal">✕</button>
+      </div>
+      <p class="helper">Quickly copy the email subject and body formatted with current quote details.</p>
+      
+      <div class="field">
+        <label for="emailSubject">Subject</label>
+        <div style="display:flex; gap:var(--space-2);">
+          <input class="input" id="emailSubject" readonly style="background:var(--color-surface-2); font-weight:600;" />
+          <button class="btn btn-primary" id="copySubjectBtn" type="button">Copy</button>
+        </div>
+      </div>
+      
+      <div class="field">
+        <label for="emailBody">Email Body</label>
+        <textarea class="textarea" id="emailBody" readonly style="min-height:260px; background:var(--color-surface-2); font-size:0.82rem; line-height:1.7; font-family:var(--font-body);"></textarea>
+        <div style="display:flex; justify-content:flex-end;">
+          <button class="btn btn-primary" id="copyBodyBtn" type="button">Copy Body</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- CSV Import Modal -->
+  <div class="modal-overlay" id="csvModal">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="font-size:var(--text-lg); font-weight:800; display:flex; align-items:center; gap:0.5rem;">
+          <span>📋</span> CSV / Excel Import
+        </h3>
+        <button id="closeCsvModal" class="icon-btn" type="button" aria-label="Close modal">✕</button>
+      </div>
+      <p class="helper">Paste rows copied from Excel or standard CSV. One item per line.<br>Format: <code>Code [Tab or Comma] Description [Tab or Comma] Qty [Tab or Comma] Unit [Tab or Comma] Price</code></p>
+      
+      <div class="field">
+        <textarea class="textarea" id="csvPasteArea" placeholder="LED-P1.5-IND&#9;شاشة LED داخلية&#9;11.52&#9;م²&#9;7100&#10;VP-NVS-VX1000&#9;معالج فيديو Novastar&#9;1&#9;جهاز&#9;7800" style="min-height:200px; font-family:monospace; font-size:0.8rem;"></textarea>
+      </div>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span id="csvParseCount" class="helper" style="color:var(--color-success); font-weight:bold;"></span>
+        <div style="display:flex; gap:var(--space-2);">
+          <button class="btn btn-secondary" id="cancelCsvBtn" type="button">Cancel</button>
+          <button class="btn btn-primary" id="processCsvBtn" type="button">Import Items</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
