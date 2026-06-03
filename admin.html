@@ -1067,14 +1067,16 @@
     // Portal Actions Helper
     function getPortalUrl(quoteNum) {
       let baseUrl = PRODUCTION_PORTAL_URL;
+      let useCleanSlug = true;
       if (!baseUrl || baseUrl === 'https://your-vercel-domain.com') {
         if (window.location.protocol.startsWith('http')) {
           baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+          useCleanSlug = false;
         } else {
           baseUrl = 'https://your-vercel-domain.com';
         }
       }
-      return baseUrl + '/portal.html?q=' + encodeURIComponent(quoteNum);
+      return baseUrl + (useCleanSlug ? '/portal?q=' : '/portal.html?q=') + encodeURIComponent(quoteNum);
     }
 
     function openPortalLink(quoteNum) {
