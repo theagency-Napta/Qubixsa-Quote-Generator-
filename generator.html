@@ -1211,16 +1211,33 @@
       }
     }
 
+    function ensurePasscode() {
+      let passcode = sessionStorage.getItem('qubixsa_generator_passcode');
+      if (passcode === '1055') return passcode;
+      
+      const pass = prompt('Enter database passcode to unlock cloud features / أدخل رمز المرور لفتح الميزات السحابية:');
+      if (pass === '1055') {
+        sessionStorage.setItem('qubixsa_generator_passcode', '1055');
+        return '1055';
+      } else if (pass !== null) {
+        alert('Incorrect passcode! Operating in offline Local Mode. / رمز المرور غير صحيح! نعمل في وضع عدم الاتصال بالإنترنت.');
+      }
+      return null;
+    }
+
     async function fetchProducts() {
       if (!supabaseClient) {
         updateSyncStatus(false);
         return;
       }
+      const passcode = ensurePasscode();
+      if (!passcode) {
+        updateSyncStatus(false);
+        return;
+      }
       try {
         const { data, error } = await supabaseClient
-          .from('products')
-          .select('*')
-          .order('code', { ascending: true });
+          .rpc('get_products_secure', { input_passcode: passcode });
 
         if (error) throw error;
         
@@ -1477,12 +1494,12 @@
 
           autocompleteTimeout = setTimeout(async () => {
             if (!supabaseClient) return;
+            const passcode = sessionStorage.getItem('qubixsa_generator_passcode');
+            if (passcode !== '1055') return;
+
             try {
               const { data, error } = await supabaseClient
-                .from('customers')
-                .select('rep_name, company_name, phone, email, cr_number, tax_number, address, project_name')
-                .or(`company_name.ilike.%${query}%,rep_name.ilike.%${query}%`)
-                .limit(5);
+                .rpc('search_customers_secure', { input_passcode: passcode, search_query: query });
 
               if (error) throw error;
 
@@ -1623,34 +1640,14 @@
         project_name: projectName || null
       };
 
+      const passcode = sessionStorage.getItem('qubixsa_generator_passcode');
+      if (passcode !== '1055') return;
+
       try {
-        // Query to check if they already exist
-        let query = supabaseClient.from('customers').select('id');
-        if (companyName) {
-          query = query.eq('company_name', companyName);
-        } else {
-          query = query.eq('rep_name', repName);
-        }
-
-        const { data, error } = await query;
+        const { error } = await supabaseClient
+          .rpc('upsert_customer_secure', { input_passcode: passcode, c_record: record });
         if (error) throw error;
-
-        if (data && data.length > 0) {
-          // Update
-          const { error: updateError } = await supabaseClient
-            .from('customers')
-            .update(record)
-            .eq('id', data[0].id);
-          if (updateError) throw updateError;
-          console.log('Customer updated in Supabase:', companyName || repName);
-        } else {
-          // Insert
-          const { error: insertError } = await supabaseClient
-            .from('customers')
-            .insert([record]);
-          if (insertError) throw insertError;
-          console.log('Customer inserted in Supabase:', companyName || repName);
-        }
+        console.log('Customer synced to Supabase securely:', companyName || repName);
       } catch (err) {
         console.error('Error syncing client to Supabase:', err);
       }
@@ -1745,9 +1742,15 @@
           signature_base64: null
         };
 
+        const passcode = ensurePasscode();
+        if (!passcode) {
+          publishBtn.disabled = false;
+          publishBtn.innerHTML = originalText;
+          return;
+        }
+
         const { data, error } = await supabaseClient
-          .from('quotes')
-          .upsert(record, { onConflict: 'quote_number' });
+          .rpc('publish_quote_secure', { input_passcode: passcode, q_record: record });
 
         if (error) {
           console.error('Database publish error:', error);
@@ -1814,19 +1817,15 @@
         return;
       }
       
+      const passcode = ensurePasscode();
+      if (!passcode) {
+        resultsContainer.innerHTML = '<div style="text-align:center; padding:var(--space-4); color:var(--color-warning);">Unauthorized. Passcode required.</div>';
+        return;
+      }
+      
       try {
-        let request = supabaseClient
-          .from('customers')
-          .select('rep_name, company_name, phone, email, cr_number, tax_number, address, project_name')
-          .order('company_name', { ascending: true })
-          .limit(20);
-          
-        if (query.trim()) {
-          const q = query.trim();
-          request = request.or(`company_name.ilike.%${q}%,rep_name.ilike.%${q}%,phone.ilike.%${q}%,email.ilike.%${q}%`);
-        }
-        
-        const { data, error } = await request;
+        const { data, error } = await supabaseClient
+          .rpc('fetch_crm_clients_secure', { input_passcode: passcode, search_query: query });
         if (error) throw error;
         
         renderCrmSearchResults(data || []);
@@ -3024,6 +3023,7 @@ ${issuerName}
           if (!isAdminMode) {
             const pass = prompt('Enter Admin Passcode:');
             if (pass === '1055') {
+              sessionStorage.setItem('qubixsa_generator_passcode', '1055');
               isAdminMode = true;
               updateAdminModeUI();
               showToast('Admin Mode enabled. Costs & Margins visible.');

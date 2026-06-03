@@ -1529,30 +1529,27 @@
 
       try {
         const { data, error } = await supabase
-          .from('quotes')
-          .select('*')
-          .eq('quote_number', quoteNum)
-          .single();
+          .rpc('get_quote_by_number', { q_number: quoteNum });
 
-        if (error || !data) {
+        const quote = (data && data.length > 0) ? data[0] : null;
+
+        if (error || !quote) {
           console.error(error);
           renderErrorState('عذراً، لم يتم العثور على عرض السعر المطلوب في قاعدة البيانات.', `Quote ${quoteNum} not found. Please verify details.`);
           return;
         }
 
-        quoteRecord = data;
-        const payload = data.payload;
+        quoteRecord = quote;
+        const payload = quote.payload;
 
         // Trigger 'viewed' update if quote status is 'sent'
-        if (data.status === 'sent') {
+        if (quote.status === 'sent') {
           await supabase
-            .from('quotes')
-            .update({ status: 'viewed', viewed_at: new Date().toISOString() })
-            .eq('id', data.id);
+            .rpc('view_quote_by_number', { q_number: quoteNum });
           
           quoteRecord.status = 'viewed';
           // Trigger Webhook on viewed
-          triggerWebhook('viewed', data.quote_number, data.client_name, 'Client viewed the quote page.');
+          triggerWebhook('viewed', quote.quote_number, quote.client_name, 'Client viewed the quote page.');
         }
 
         // Render the quote views
@@ -2065,18 +2062,15 @@
         const marginPercent = subtotal > 0 ? (profit / subtotal) * 100 : 0;
 
         const { data, error } = await supabase
-          .from('quotes')
-          .update({
-            status: 'approved',
-            signature_base64: signatureBase64,
-            signed_at: signedAt,
-            signed_by: signerName,
-            payload: updatedPayload,
-            total_price: grand,
-            total_cost: totalCost,
-            margin_percent: marginPercent
-          })
-          .eq('id', quoteRecord.id);
+          .rpc('approve_and_sign_quote', {
+            q_id: quoteRecord.id,
+            q_signer: signerName,
+            q_signature: signatureBase64,
+            q_payload: updatedPayload,
+            q_total_price: grand,
+            q_total_cost: totalCost,
+            q_margin_percent: marginPercent
+          });
 
         if (error) {
           console.error(error);

@@ -763,6 +763,7 @@
     let currentFilter = 'all';
     let timelineChartRef = null;
     let statusChartRef = null;
+    let adminPasscode = '';
 
     try {
       if (window.supabase && window.supabase.createClient) {
@@ -777,11 +778,14 @@
       let isAuthed = false;
       try {
         isAuthed = (sessionStorage.getItem('qubixsa_admin_authenticated') === 'true');
+        adminPasscode = sessionStorage.getItem('qubixsa_admin_passcode') || '';
       } catch (e) {
         console.warn('sessionStorage is disabled or blocked:', e);
       }
-      if (isAuthed) {
+      if (isAuthed && adminPasscode === '1055') {
         unlockDashboard();
+      } else {
+        logoutAdmin();
       }
     };
 
@@ -805,8 +809,10 @@
     function submitPasscode() {
       const passcode = document.getElementById('passcodeField').value;
       if (passcode === '1055') {
+        adminPasscode = passcode;
         try {
           sessionStorage.setItem('qubixsa_admin_authenticated', 'true');
+          sessionStorage.setItem('qubixsa_admin_passcode', passcode);
         } catch (e) {
           console.warn('sessionStorage is disabled or blocked:', e);
         }
@@ -826,8 +832,10 @@
     }
 
     function logoutAdmin() {
+      adminPasscode = '';
       try {
         sessionStorage.removeItem('qubixsa_admin_authenticated');
+        sessionStorage.removeItem('qubixsa_admin_passcode');
       } catch (e) {
         console.warn('sessionStorage is disabled or blocked:', e);
       }
@@ -850,9 +858,7 @@
       showToast('جاري تحديث سجل عروض الأسعار...');
       try {
         const { data, error } = await supabase
-          .from('quotes')
-          .select('*')
-          .order('created_at', { ascending: false });
+          .rpc('get_admin_dashboard_data', { input_passcode: adminPasscode });
 
         if (error) throw error;
 
@@ -1077,9 +1083,7 @@
 
       try {
         const { error } = await supabase
-          .from('quotes')
-          .delete()
-          .eq('id', id);
+          .rpc('delete_quote_by_id', { input_passcode: adminPasscode, q_id: id });
 
         if (error) throw error;
 
