@@ -1060,13 +1060,13 @@
     // Portal Actions Helper
     function openPortalLink(quoteNum) {
       const currentUrl = window.location.href;
-      const portalUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/')) + '/qubixsa-client-portal.html?q=' + encodeURIComponent(quoteNum);
+      const portalUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/')) + '/portal.html?q=' + encodeURIComponent(quoteNum);
       window.open(portalUrl, '_blank');
     }
 
     function copyPortalLink(quoteNum) {
       const currentUrl = window.location.href;
-      const portalUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/')) + '/qubixsa-client-portal.html?q=' + encodeURIComponent(quoteNum);
+      const portalUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/')) + '/portal.html?q=' + encodeURIComponent(quoteNum);
       navigator.clipboard.writeText(portalUrl)
         .then(() => showToast('تم نسخ الرابط المباشر للعميل بنجاح!'))
         .catch(() => showToast('فشل نسخ الرابط.', true));

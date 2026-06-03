@@ -1753,9 +1753,9 @@
           console.error('Database publish error:', error);
           showToast(`Publish failed: ${error.message}. Did you run the SQL migration schema in Supabase?`, true);
         } else {
-          // Construct portal url dynamically pointing to qubixsa-client-portal.html in same path
+          // Construct portal url dynamically pointing to portal.html in same path
           const currentUrl = window.location.href;
-          const portalUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/')) + '/qubixsa-client-portal.html?q=' + encodeURIComponent(quoteNum);
+          const portalUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/')) + '/portal.html?q=' + encodeURIComponent(quoteNum);
           
           document.getElementById('publishedUrlInput').value = portalUrl;
           document.getElementById('publishModal').classList.add('active');
