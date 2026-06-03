@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بوابة الإدارة وتحليل المبيعات | Qubixsa Admin Dashboard</title>
+  
+  <!-- Fonts: Cairo & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Supabase & Chart.js CDNs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --color-bg: #f5f4f0;
+      --color-surface: #ffffff;
+      --color-surface-2: #faf9f6;
+      --color-border: #e2ddd5;
+      --color-text: #231e17;
+      --color-muted: #7d756b;
+      
+      /* Primary Branding red */
+      --color-primary: #e84c2b;
+      --color-primary-hover: #cc3f22;
+      --color-primary-soft: rgba(232, 76, 43, 0.08);
+      
+      /* Success & Info colors */
+      --color-success: #287d49;
+      --color-success-soft: rgba(40, 125, 73, 0.08);
+      --color-info: #1b689c;
+      --color-info-soft: rgba(27, 104, 156, 0.08);
+      
+      --font-ar: 'Cairo', sans-serif;
+      --font-en: 'Inter', sans-serif;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      
+      --shadow-sm: 0 4px 12px rgba(35, 30, 24, 0.03);
+      --shadow-md: 0 10px 30px rgba(35, 30, 24, 0.06);
+      --shadow-lg: 0 20px 50px rgba(35, 30, 24, 0.1);
+      
+      --space-4: 1rem;
+      --space-5: 1.5rem;
+      --space-6: 2rem;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-ar);
+      padding-bottom: 60px;
+      direction: rtl;
+    }
+
+    /* Passcode Lock Overlay Screen */
+    .lock-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--color-bg);
+      z-index: 100000;
+      display: grid;
+      place-items: center;
+      padding: var(--space-4);
+    }
+
+    .lock-card {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: var(--space-6);
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .lock-logo {
+      width: 60px;
+      height: 60px;
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 1.8rem;
+      font-weight: 900;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      margin: 0 auto var(--space-4);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .lock-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .lock-desc {
+      font-size: 0.82rem;
+      color: var(--color-muted);
+      margin-bottom: var(--space-5);
+    }
+
+    .lock-input {
+      width: 100%;
+      padding: 0.9rem 1.2rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-2);
+      font-size: 1.2rem;
+      font-weight: 900;
+      text-align: center;
+      letter-spacing: 0.3em;
+      margin-bottom: var(--space-4);
+      font-family: var(--font-en);
+      transition: all 0.25s ease;
+    }
+
+    .lock-input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      background: #fff;
+      box-shadow: 0 0 0 4px var(--color-primary-soft);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.85rem 1.5rem;
+      border-radius: var(--radius-md);
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      font-family: var(--font-ar);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--color-primary-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Main Dashboard Layout */
+    .dashboard-container {
+      display: none; /* Shown after unlock */
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--space-4);
+    }
+
+    /* Top bar */
+    .dash-header {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-5);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: var(--space-4);
+      margin-bottom: var(--space-5);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .header-brand h1 {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--color-text);
+      line-height: 1.2;
+    }
+
+    .header-brand h1 span {
+      font-size: 0.72rem;
+      color: var(--color-muted);
+      display: block;
+      font-family: var(--font-en);
+      letter-spacing: 0.08em;
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    .header-btn {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+      font-weight: 800;
+      font-size: 0.8rem;
+      padding: 0.55rem 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .header-btn:hover {
+      background: var(--color-border);
+    }
+
+    /* KPI Grid Cards styling */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+
+    .kpi-card {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--color-primary);
+    }
+
+    .kpi-card.success::before { background: var(--color-success); }
+    .kpi-card.info::before { background: var(--color-info); }
+    .kpi-card.warn::before { background: #b42318; }
+
+    .kpi-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--color-muted);
+      margin-bottom: var(--space-2);
+    }
+
+    .kpi-val {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--color-text);
+      font-family: var(--font-en);
+      direction: ltr;
+      display: inline-block;
+      margin-bottom: 2px;
+    }
+
+    .kpi-desc {
+      font-size: 0.68rem;
+      color: var(--color-muted);
+      font-weight: 700;
+    }
+
+    /* Analytics Charts block */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1.8fr 1.2fr;
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+
+    .leaderboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+
+    .chart-card {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4) var(--space-5);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chart-header {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--color-text);
+      margin-bottom: var(--space-4);
+      border-bottom: 2px solid var(--color-bg);
+      padding-bottom: 8px;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 240px;
+    }
+
+    /* Sales Representative Leaderboard Section */
+    .rep-card {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: var(--space-5);
+    }
+
+    /* Quote Table Log Section */
+    .table-section {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .table-header-panel {
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    .table-title {
+      font-size: 1rem;
+      font-weight: 850;
+      color: var(--color-text);
+    }
+
+    .search-input {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 1rem;
+      font-size: 0.82rem;
+      font-family: inherit;
+      width: 280px;
+      background: var(--color-surface-2);
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      background: #fff;
+    }
+
+    .status-filters {
+      display: flex;
+      gap: 6px;
+    }
+
+    .filter-btn {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      color: var(--color-muted);
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn.active {
+      background: var(--color-primary);
+      color: #fff;
+      border-color: var(--color-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Quote table CSS styling */
+    .quotes-table-wrap {
+      overflow-x: auto;
+    }
+
+    .quotes-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+    }
+
+    .quotes-table th {
+      background: var(--color-surface-2);
+      color: var(--color-muted);
+      padding: 12px 16px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      border-bottom: 1.5px solid var(--color-border);
+    }
+
+    .quotes-table td {
+      padding: 14px 16px;
+      font-size: 0.8rem;
+      border-bottom: 1px solid var(--color-divider);
+      color: var(--color-text);
+      font-weight: 600;
+    }
+
+    .quotes-table tr:hover td {
+      background: var(--color-surface-2);
+    }
+
+    .quotes-table td.amount {
+      font-family: var(--font-en);
+      font-weight: 800;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .quotes-table td.code {
+      font-family: var(--font-en);
+      color: var(--color-primary);
+      font-weight: 800;
+      font-size: 0.76rem;
+    }
+
+    .quotes-table td.rep {
+      font-weight: 700;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      gap: 4px;
+    }
+
+    .badge.sent {
+      background: var(--color-info-soft);
+      color: var(--color-info);
+    }
+
+    .badge.viewed {
+      background: var(--color-primary-soft);
+      color: var(--color-primary);
+    }
+
+    .badge.approved {
+      background: var(--color-success-soft);
+      color: var(--color-success);
+    }
+
+    .action-btn-group {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .action-btn {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      color: var(--color-muted);
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 5px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: var(--color-surface-2);
+      color: var(--color-text);
+    }
+
+    .action-btn.danger:hover {
+      background: #fdebeb;
+      color: #b42318;
+      border-color: #f5b5b5;
+    }
+
+    /* Leaderboard list styles */
+    .rep-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: var(--space-3);
+    }
+
+    .rep-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--color-bg);
+      padding-bottom: var(--space-2);
+    }
+
+    .rep-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .rep-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .rep-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: var(--color-primary-soft);
+      color: var(--color-primary);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 0.8rem;
+    }
+
+    .rep-name {
+      font-size: 0.82rem;
+      font-weight: 850;
+    }
+
+    .rep-metrics {
+      text-align: left;
+    }
+
+    .rep-value {
+      font-size: 0.82rem;
+      font-weight: 900;
+      font-family: var(--font-en);
+    }
+
+    .rep-count {
+      font-size: 0.68rem;
+      color: var(--color-muted);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: #1f1a16;
+      color: #fff;
+      padding: 0.85rem 1.25rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 700;
+      z-index: 500000;
+      box-shadow: var(--shadow-lg);
+      max-width: 320px;
+      display: none;
+      direction: rtl;
+    }
+    .toast.warn {
+      background: var(--color-primary);
+    }
+
+    @media (max-width: 992px) {
+      .kpi-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .charts-grid, .leaderboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+      .table-header-panel {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-input {
+        width: 100%;
+      }
+      .status-filters {
+        justify-content: space-between;
+      }
+      .dash-header {
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Lock Screen Authentication Overlay -->
+  <div class="lock-screen" id="lockScreen">
+    <div class="lock-card">
+      <div class="lock-logo">Q</div>
+      <h2 class="lock-title">لوحة تحكم المدير</h2>
+      <p class="lock-desc">يرجى إدخال رمز المرور الإداري للوصول للتقارير والتحليلات المبيعاتية.</p>
+      
+      <input type="password" class="lock-input" id="passcodeField" placeholder="••••" maxlength="4" autocomplete="off" oninput="checkPasscodeAuto()">
+      <button class="btn btn-primary" onclick="submitPasscode()">دخول اللوحة</button>
+    </div>
+  </div>
+
+  <!-- Toast alert block -->
+  <div id="dashToast" class="toast"></div>
+
+  <!-- Main Dashboard Dashboard Content Container -->
+  <div class="dashboard-container" id="dashboardContent">
+    
+    <!-- Top Header -->
+    <header class="dash-header">
+      <div class="header-brand">
+        <div class="lock-logo" style="width:36px; height:36px; border-radius:10px; margin:0; font-size:1.1rem;">Q</div>
+        <h1>
+          بوابة الإدارة وتحليلات المبيعات
+          <span>QUBIXSA MANAGEMENT CONSOLE</span>
+        </h1>
+      </div>
+      <div class="header-actions">
+        <button class="header-btn" onclick="refreshDashboardData()">🔄 تحديث البيانات</button>
+        <button class="header-btn" onclick="logoutAdmin()" style="border-color:rgba(180,35,24,0.3); color:#b42318;">🚪 خروج</button>
+      </div>
+    </header>
+
+    <!-- KPI Metrics Row -->
+    <div class="kpi-grid">
+      <div class="kpi-card info">
+        <div class="kpi-title">إجمالي أنبوب المبيعات (Pipeline)</div>
+        <div class="kpi-val" id="kpiPipeline">SAR 0.00</div>
+        <div class="kpi-desc">إجمالي العروض المرسلة وتحت المراجعة</div>
+      </div>
+      <div class="kpi-card success">
+        <div class="kpi-title">العقود المعتمدة والموقعة (Won)</div>
+        <div class="kpi-val" id="kpiWon">SAR 0.00</div>
+        <div class="kpi-desc" id="kpiWonCount">0 عروض معتمدة بنجاح</div>
+      </div>
+      <div class="kpi-card success">
+        <div class="kpi-title">الهامش الإجمالي للأرباح (Gross Profit)</div>
+        <div class="kpi-val" id="kpiProfit">SAR 0.00</div>
+        <div class="kpi-desc" id="kpiAvgMargin">متوسط هامش الربح: 0.00%</div>
+      </div>
+      <div class="kpi-card warn">
+        <div class="kpi-title">معدل نجاح إغلاق الصفقات (Conversion)</div>
+        <div class="kpi-val" id="kpiCloseRate">0.0%</div>
+        <div class="kpi-desc" id="kpiRatioInfo">العروض الموقعة من إجمالي المنشور</div>
+      </div>
+    </div>
+
+    <!-- Charts & Leaderboards -->
+    <div class="charts-grid">
+      
+      <!-- Sales Timeline Chart -->
+      <div class="chart-card">
+        <div class="chart-header">📊 حجم المبيعات الشهرية وسير العقود</div>
+        <div class="chart-container">
+          <canvas id="timelineChart"></canvas>
+        </div>
+      </div>
+      
+      <!-- Status Split Doughnut -->
+      <div class="chart-card">
+        <div class="chart-header">📈 توزيع حالات عروض الأسعار</div>
+        <div class="chart-container" style="height:210px;">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+      
+    </div>
+
+    <!-- Representative Leaderboard & Pipeline Split -->
+    <div class="leaderboard-grid">
+      
+      <!-- Leaderboard Column -->
+      <div class="rep-card">
+        <div class="chart-header">🏆 أداء ممثلي المبيعات (Sales Reps)</div>
+        <div class="rep-list" id="repsLeaderboard">
+          <!-- Renders dynamically -->
+          <div style="text-align:center; padding:20px; color:var(--color-muted);">جاري تحميل القائمة...</div>
+        </div>
+      </div>
+
+      <!-- Live quotes registry table log -->
+      <div class="table-section">
+        <div class="table-header-panel">
+          <div class="table-title">📃 سجل ومتابعة عروض الأسعار النشطة</div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <input type="text" class="search-input" id="searchFilter" placeholder="ابحث برقم العرض، اسم العميل أو المندوب..." oninput="handleSearchFilter()">
+            
+            <div class="status-filters">
+              <button class="filter-btn active" id="btnFilterAll" onclick="filterStatus('all')">الكل</button>
+              <button class="filter-btn" id="btnFilterSent" onclick="filterStatus('sent')">المرسلة</button>
+              <button class="filter-btn" id="btnFilterViewed" onclick="filterStatus('viewed')">المشاهدة</button>
+              <button class="filter-btn" id="btnFilterApproved" onclick="filterStatus('approved')">المعتمدة</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="quotes-table-wrap">
+          <table class="quotes-table">
+            <thead>
+              <tr>
+                <th style="width:110px;">رقم العرض</th>
+                <th>اسم العميل</th>
+                <th style="width:110px;">المندوب</th>
+                <th>اسم المشروع</th>
+                <th style="width:100px; text-align:center;">الحالة</th>
+                <th style="width:90px; text-align:center;">الهامش %</th>
+                <th style="width:130px; text-align:left;">إجمالي السعر</th>
+                <th style="width:160px; text-align:center;">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="quotesTableBody">
+              <!-- Rendered dynamically -->
+              <tr><td colspan="8" style="padding:40px; text-align:center; color:var(--color-muted);">جاري تحميل عروض الأسعار...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // ── Supabase Credentials ──
+    const SUPABASE_URL = 'https://ylmalaszyhltwklqfhhs.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbWFsYXN6eWhsdHdrbHFmaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDY4ODUsImV4cCI6MjA5MDUyMjg4NX0.tDT94RNca_XliAZhqbAKWcam9m1NSjkR3ftZUznL3ts';
+
+    let supabase = null;
+    let quotesDb = [];
+    let filteredQuotes = [];
+    let currentFilter = 'all';
+    let timelineChartRef = null;
+    let statusChartRef = null;
+
+    try {
+      if (window.supabase && window.supabase.createClient) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch (e) {
+      console.error('Supabase client failed to connect:', e);
+    }
+
+    // Auto-check passcode on window load if saved in session
+    window.onload = () => {
+      let isAuthed = false;
+      try {
+        isAuthed = (sessionStorage.getItem('qubixsa_admin_authenticated') === 'true');
+      } catch (e) {
+        console.warn('sessionStorage is disabled or blocked:', e);
+      }
+      if (isAuthed) {
+        unlockDashboard();
+      }
+    };
+
+    function showToast(msg, warn = false) {
+      const toast = document.getElementById('dashToast');
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.classList.toggle('warn', warn);
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    // ── Authentication Passcode Security ──
+    function checkPasscodeAuto() {
+      const input = document.getElementById('passcodeField');
+      if (input.value.length === 4) {
+        submitPasscode();
+      }
+    }
+
+    function submitPasscode() {
+      const passcode = document.getElementById('passcodeField').value;
+      if (passcode === '1055') {
+        try {
+          sessionStorage.setItem('qubixsa_admin_authenticated', 'true');
+        } catch (e) {
+          console.warn('sessionStorage is disabled or blocked:', e);
+        }
+        unlockDashboard();
+        showToast('تم التحقق والدخول بنجاح!');
+      } else {
+        showToast('رمز المرور المدخل غير صحيح!', true);
+        document.getElementById('passcodeField').value = '';
+        document.getElementById('passcodeField').focus();
+      }
+    }
+
+    function unlockDashboard() {
+      document.getElementById('lockScreen').style.display = 'none';
+      document.getElementById('dashboardContent').style.display = 'block';
+      refreshDashboardData();
+    }
+
+    function logoutAdmin() {
+      try {
+        sessionStorage.removeItem('qubixsa_admin_authenticated');
+      } catch (e) {
+        console.warn('sessionStorage is disabled or blocked:', e);
+      }
+      document.getElementById('passcodeField').value = '';
+      document.getElementById('lockScreen').style.display = 'grid';
+      document.getElementById('dashboardContent').style.display = 'none';
+      
+      // Clear chart objects to prevent canvas overlaps on re-entry
+      if (timelineChartRef) { timelineChartRef.destroy(); timelineChartRef = null; }
+      if (statusChartRef) { statusChartRef.destroy(); statusChartRef = null; }
+    }
+
+    // ── Analytics and Data Retrievals ──
+    async function refreshDashboardData() {
+      if (!supabase) {
+        showToast('فشل الاتصال بقاعدة البيانات. تأكد من إعدادات الاتصال.', true);
+        return;
+      }
+
+      showToast('جاري تحديث سجل عروض الأسعار...');
+      try {
+        const { data, error } = await supabase
+          .from('quotes')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        quotesDb = data || [];
+        filteredQuotes = [...quotesDb];
+        
+        calculateMetrics();
+        renderRepsLeaderboard();
+        renderTableRows();
+        renderTimelineChart();
+        renderStatusDoughnut();
+
+      } catch (err) {
+        console.error('Error refreshing quotes database:', err);
+        showToast(`فشل جلب البيانات: ${err.message}`, true);
+      }
+    }
+
+    // Calculate top-level KPIs
+    function calculateMetrics() {
+      let pipelineTotal = 0;
+      let wonTotal = 0;
+      let wonCost = 0;
+      let wonCount = 0;
+      let totalMargins = 0;
+
+      quotesDb.forEach(q => {
+        const price = parseFloat(q.total_price || 0);
+        const cost = parseFloat(q.total_cost || 0);
+        
+        if (q.status === 'sent' || q.status === 'viewed') {
+          pipelineTotal += price;
+        } else if (q.status === 'approved') {
+          wonTotal += price;
+          wonCost += cost;
+          wonCount++;
+          totalMargins += parseFloat(q.margin_percent || 0);
+        }
+      });
+
+      const closeRate = quotesDb.length > 0 ? (wonCount / quotesDb.length) * 100 : 0;
+      const netProfit = wonTotal - wonCost;
+      const avgMargin = wonCount > 0 ? (totalMargins / wonCount) : 0;
+
+      // Update KPI views
+      document.getElementById('kpiPipeline').textContent = `SAR ${formatMoney(pipelineTotal)}`;
+      document.getElementById('kpiWon').textContent = `SAR ${formatMoney(wonTotal)}`;
+      document.getElementById('kpiWonCount').textContent = `${wonCount} عقود معتمدة وناجحة`;
+      document.getElementById('kpiProfit').textContent = `SAR ${formatMoney(netProfit)}`;
+      document.getElementById('kpiAvgMargin').textContent = `متوسط هامش الربح: ${avgMargin.toFixed(1)}%`;
+      document.getElementById('kpiCloseRate').textContent = `${closeRate.toFixed(1)}%`;
+      document.getElementById('kpiRatioInfo').textContent = `${wonCount} عقود موقعة من أصل ${quotesDb.length} عرض منشور`;
+    }
+
+    // Money formatter
+    function formatMoney(amount) {
+      if (amount === undefined || amount === null || isNaN(amount)) return '0.00';
+      return parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // Render sales representatives leaderboard
+    function renderRepsLeaderboard() {
+      const container = document.getElementById('repsLeaderboard');
+      if (!container) return;
+
+      const repStats = {};
+
+      quotesDb.forEach(q => {
+        const rep = (q.representative_name || 'غير محدد').trim();
+        const price = parseFloat(q.total_price || 0);
+        const isApproved = (q.status === 'approved');
+
+        if (!repStats[rep]) {
+          repStats[rep] = { totalGenerated: 0, wonValue: 0, count: 0, wonCount: 0 };
+        }
+
+        repStats[rep].totalGenerated += price;
+        repStats[rep].count++;
+        if (isApproved) {
+          repStats[rep].wonValue += price;
+          repStats[rep].wonCount++;
+        }
+      });
+
+      // Sort representatives by signed value
+      const repsSorted = Object.entries(repStats).sort((a, b) => b[1].wonValue - a[1].wonValue);
+
+      if (repsSorted.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--color-muted);">لا يوجد بيانات ممثلين بعد.</div>`;
+        return;
+      }
+
+      container.innerHTML = repsSorted.map(([name, stats]) => {
+        const firstLetter = name ? name.charAt(0) : '?';
+        return `
+          <div class="rep-item">
+            <div class="rep-info">
+              <div class="rep-avatar">${firstLetter}</div>
+              <div>
+                <div class="rep-name">${name}</div>
+                <div class="rep-count">العروض الإجمالية: ${stats.count} | الناجحة: ${stats.wonCount}</div>
+              </div>
+            </div>
+            <div class="rep-metrics">
+              <div class="rep-value">SAR ${formatMoney(stats.wonValue)}</div>
+              <div class="rep-count" style="text-align:left;">إجمالي الصفقات الموقعة</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Filter by search query
+    function handleSearchFilter() {
+      const query = document.getElementById('searchFilter').value.toLowerCase().trim();
+      applyFiltersAndRender(query, currentFilter);
+    }
+
+    // Filter by status pill selection
+    function filterStatus(status) {
+      currentFilter = status;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      const activeBtnId = 'btnFilter' + status.charAt(0).toUpperCase() + status.slice(1);
+      const activeBtn = document.getElementById(activeBtnId);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const query = document.getElementById('searchFilter').value.toLowerCase().trim();
+      applyFiltersAndRender(query, status);
+    }
+
+    function applyFiltersAndRender(query, status) {
+      filteredQuotes = quotesDb.filter(q => {
+        const matchQuery = 
+          (q.quote_number || '').toLowerCase().includes(query) ||
+          (q.client_name || '').toLowerCase().includes(query) ||
+          (q.representative_name || '').toLowerCase().includes(query) ||
+          (q.project_name || '').toLowerCase().includes(query);
+        
+        const matchStatus = (status === 'all') || (q.status === status);
+        
+        return matchQuery && matchStatus;
+      });
+
+      renderTableRows();
+    }
+
+    // Render table listings
+    function renderTableRows() {
+      const tbody = document.getElementById('quotesTableBody');
+      if (!tbody) return;
+
+      if (filteredQuotes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="padding:40px; text-align:center; color:var(--color-muted);">لم يتم العثور على أي عروض أسعار تطابق خيارات التصفية الحالية.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filteredQuotes.map(q => {
+        let statusBadge = '';
+        if (q.status === 'sent') {
+          statusBadge = '<span class="badge sent">⏳ مرسل</span>';
+        } else if (q.status === 'viewed') {
+          statusBadge = '<span class="badge viewed">👁️ شوهد</span>';
+        } else if (q.status === 'approved') {
+          statusBadge = '<span class="badge approved">✅ معتمد</span>';
+        } else {
+          statusBadge = `<span class="badge" style="background:#eee;color:#333;">${q.status}</span>`;
+        }
+
+        const margin = parseFloat(q.margin_percent || 0);
+        let marginColor = '#287d49'; // Green
+        if (margin < 25) marginColor = '#b42318'; // Red warning threshold
+        else if (margin < 35) marginColor = '#d97706'; // Amber
+
+        let payload = q.payload;
+        if (typeof payload === 'string') {
+          try { payload = JSON.parse(payload); } catch (e) { payload = null; }
+        }
+        const price = parseFloat(q.total_price || 0);
+        const currency = (payload && payload.data && payload.data.currency === 'USD') ? 'USD' : 'SAR';
+
+        return `
+          <tr>
+            <td class="code">${q.quote_number || '—'}</td>
+            <td>${q.client_name || '—'}</td>
+            <td class="rep">${q.representative_name || '—'}</td>
+            <td style="font-size:0.75rem; color:var(--color-muted); font-weight:700;">${q.project_name || '—'}</td>
+            <td style="text-align:center;">${statusBadge}</td>
+            <td style="text-align:center; color:${marginColor}; font-weight:800; font-family:var(--font-en);">${margin.toFixed(1)}%</td>
+            <td class="amount">${currency} ${formatMoney(price)}</td>
+            <td style="text-align:center;">
+              <div class="action-btn-group">
+                <button class="action-btn" onclick="openPortalLink('${q.quote_number}')" title="فتح صفحة العميل">🌐 بوابة</button>
+                <button class="action-btn" onclick="copyPortalLink('${q.quote_number}')" title="نسخ رابط العرض">📋 نسخ</button>
+                <button class="action-btn danger" onclick="deleteQuoteRow('${q.id}', '${q.quote_number}')" title="حذف العرض">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Portal Actions Helper
+    function openPortalLink(quoteNum) {
+      const currentUrl = window.location.href;
+      const portalUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/')) + '/qubixsa-client-portal.html?q=' + encodeURIComponent(quoteNum);
+      window.open(portalUrl, '_blank');
+    }
+
+    function copyPortalLink(quoteNum) {
+      const currentUrl = window.location.href;
+      const portalUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/')) + '/qubixsa-client-portal.html?q=' + encodeURIComponent(quoteNum);
+      navigator.clipboard.writeText(portalUrl)
+        .then(() => showToast('تم نسخ الرابط المباشر للعميل بنجاح!'))
+        .catch(() => showToast('فشل نسخ الرابط.', true));
+    }
+
+    async function deleteQuoteRow(id, quoteNum) {
+      if (!confirm(`هل أنت متأكد من رغبتك في حذف عرض السعر رقم ${quoteNum} نهائياً من قاعدة البيانات؟`)) return;
+
+      try {
+        const { error } = await supabase
+          .from('quotes')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+
+        showToast(`تم حذف العرض ${quoteNum} بنجاح.`);
+        refreshDashboardData();
+
+      } catch (err) {
+        console.error('Delete quotes execution failed:', err);
+        showToast(`فشل حذف العرض: ${err.message}`, true);
+      }
+    }
+
+    // ── Chart.js Visualizations Setup ──
+    function renderTimelineChart() {
+      const ctx = document.getElementById('timelineChart');
+      if (!ctx) return;
+
+      try {
+        if (window.Chart) {
+          const existingChart = Chart.getChart(ctx);
+          if (existingChart) existingChart.destroy();
+        }
+      } catch (e) {
+        console.warn('Error destroying old timeline chart:', e);
+      }
+
+      // Aggregate quotes by month/date
+      const salesMap = {};
+      const signedMap = {};
+
+      quotesDb.forEach(q => {
+        if (!q.created_at) return;
+        const date = new Date(q.created_at);
+        if (isNaN(date.getTime())) return;
+        const monthLabel = date.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+        const price = parseFloat(q.total_price || 0);
+
+        if (!salesMap[monthLabel]) {
+          salesMap[monthLabel] = 0;
+          signedMap[monthLabel] = 0;
+        }
+
+        salesMap[monthLabel] += price;
+        if (q.status === 'approved') {
+          signedMap[monthLabel] += price;
+        }
+      });
+
+      // Keep chronological order (last 6 labels as example, reversed keys)
+      const labels = Object.keys(salesMap).reverse().slice(-6);
+      const salesData = labels.map(l => salesMap[l] || 0);
+      const signedData = labels.map(l => signedMap[l] || 0);
+
+      if (!window.Chart) {
+        console.error('Chart.js is not loaded.');
+        return;
+      }
+
+      timelineChartRef = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'العقود الموقعة المعتمدة (SAR)',
+              data: signedData,
+              backgroundColor: '#287d49',
+              borderColor: '#287d49',
+              borderWidth: 1,
+              borderRadius: 6
+            },
+            {
+              label: 'إجمالي المقترحات المفتوحة (SAR)',
+              data: salesData,
+              backgroundColor: '#efece8',
+              borderColor: '#e2ddd5',
+              borderWidth: 1,
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { font: { family: 'Cairo' } }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { font: { family: 'Inter' } }
+            },
+            x: {
+              ticks: { font: { family: 'Inter' } }
+            }
+          }
+        }
+      });
+    }
+
+    function renderStatusDoughnut() {
+      const ctx = document.getElementById('statusChart');
+      if (!ctx) return;
+
+      try {
+        if (window.Chart) {
+          const existingChart = Chart.getChart(ctx);
+          if (existingChart) existingChart.destroy();
+        }
+      } catch (e) {
+        console.warn('Error destroying old status chart:', e);
+      }
+
+      let sent = 0;
+      let viewed = 0;
+      let approved = 0;
+
+      quotesDb.forEach(q => {
+        if (q.status === 'sent') sent++;
+        else if (q.status === 'viewed') viewed++;
+        else if (q.status === 'approved') approved++;
+      });
+
+      if (!window.Chart) {
+        console.error('Chart.js is not loaded.');
+        return;
+      }
+
+      statusChartRef = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['مرسل / Active', 'مشاهد / Viewed', 'معتمد / Signed'],
+          datasets: [{
+            data: [sent, viewed, approved],
+            backgroundColor: ['#1b689c', '#e84c2b', '#287d49'],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { font: { family: 'Cairo', size: 10 } }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

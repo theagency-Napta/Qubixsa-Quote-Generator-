@@ -1,0 +1,2121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بوابة العميل | Qubixsa Client Portal</title>
+  
+  <!-- Fonts: Cairo for Arabic, Inter for English -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Supabase JS Client & Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* Premium CSS Custom Variables matching Qubixsa Branding */
+    :root {
+      --color-bg: #f8f7f4;
+      --color-surface: #ffffff;
+      --color-surface-2: #faf8f5;
+      --color-border: #e3ded8;
+      --color-divider: #efece8;
+      --color-text: #231e18;
+      --color-muted: #797268;
+      --color-faint: #bdafa0;
+      
+      /* Primary Signature Red & Accents */
+      --color-primary: #e84c2b;
+      --color-primary-hover: #cc3f22;
+      --color-primary-soft: rgba(232, 76, 43, 0.07);
+      
+      /* Success & Info colors */
+      --color-success: #287d49;
+      --color-success-soft: rgba(40, 125, 73, 0.08);
+      --color-info: #216ba5;
+      --color-info-soft: rgba(33, 107, 165, 0.08);
+      
+      --font-ar: 'Cairo', sans-serif;
+      --font-en: 'Inter', sans-serif;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-xl: 26px;
+      --shadow-sm: 0 4px 12px rgba(35, 30, 24, 0.03);
+      --shadow-md: 0 10px 30px rgba(35, 30, 24, 0.06);
+      --shadow-lg: 0 20px 50px rgba(35, 30, 24, 0.12);
+      
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.5rem;
+      --space-6: 2rem;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-bg);
+      background-image: radial-gradient(var(--color-border) 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: var(--color-text);
+      font-family: var(--font-ar);
+      line-height: 1.5;
+      padding: var(--space-4) 0;
+      direction: rtl;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 var(--space-4);
+    }
+
+    /* Portal Header & Status Alert Bar */
+    .portal-nav {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-4);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-4);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .portal-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .portal-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--color-primary);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 1.2rem;
+    }
+
+    .portal-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--color-text);
+      line-height: 1.2;
+    }
+
+    .portal-title span {
+      font-size: 0.72rem;
+      color: var(--color-muted);
+      display: block;
+      font-family: var(--font-en);
+      letter-spacing: 0.05em;
+    }
+
+    /* Active status pills */
+    .status-pill {
+      font-size: 0.82rem;
+      font-weight: 800;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow-sm);
+      border: 1.5px solid transparent;
+    }
+
+    .status-pill.sent {
+      background: var(--color-info-soft);
+      border-color: rgba(33, 107, 165, 0.2);
+      color: var(--color-info);
+    }
+
+    .status-pill.viewed {
+      background: var(--color-primary-soft);
+      border-color: rgba(232, 76, 43, 0.2);
+      color: var(--color-primary);
+    }
+
+    .status-pill.approved {
+      background: var(--color-success-soft);
+      border-color: rgba(40, 125, 73, 0.2);
+      color: var(--color-success);
+    }
+
+    /* Option switcher tabs styling */
+    .option-switcher-wrap {
+      display: none; /* Shown dynamically if comparison is active */
+      margin-bottom: var(--space-4);
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      padding: 6px;
+      border-radius: var(--radius-md);
+      justify-content: center;
+      gap: var(--space-2);
+    }
+
+    .option-tab-btn {
+      flex: 1;
+      padding: 0.7rem var(--space-4);
+      border-radius: var(--radius-sm);
+      border: none;
+      background: transparent;
+      color: var(--color-muted);
+      font-weight: 800;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-ar);
+    }
+
+    .option-tab-btn.active {
+      background: #fff;
+      color: var(--color-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* The Main Quote Preview Frame Container */
+    .quote-card-shell {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      margin-bottom: var(--space-5);
+    }
+
+    /* Embed existing style rules to preserve exact markup styles */
+    .quote-page {
+      width: 100%;
+      background: #fff;
+      padding: 24px;
+      font-family: var(--font-ar);
+      color: #191514;
+      position: relative;
+    }
+    .quote-page::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e84c2b' fill-opacity='0.02'%3E%3Cpath d='M10 10h10v10H10zm20 20h10v10H30zm20-20h10v10H50zM70 30h10v10H70zM10 50h10v10H10zm40 0h10v10H50zm20 20h10v10H70zM30 70h10v10H30zM50 90h10v10H50zM10 90h10v10H10zm80-40h10v10H90zm0 40h10v10H90zM90 10h10v10H90z'/%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .watermark {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      font-size: 90px;
+      font-weight: 900;
+      color: rgba(232, 76, 43, 0.03);
+      transform: rotate(-32deg);
+      z-index: 0;
+    }
+
+    .quote-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-4);
+      padding-bottom: 18px;
+      border-bottom: 4px solid var(--color-primary);
+      position: relative;
+      z-index: 1;
+    }
+
+    .quote-badge {
+      background: var(--color-primary);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: 900;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+
+    .quote-badge-sub {
+      color: var(--color-primary);
+      font-size: 0.72rem;
+      font-weight: 800;
+      margin-top: 6px;
+      text-align: center;
+    }
+
+    .quote-brand {
+      text-align: right;
+    }
+
+    .quote-brand .name {
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      color: var(--color-primary);
+    }
+
+    .quote-brand .tag {
+      font-size: 0.68rem;
+      color: #999;
+      letter-spacing: 0.1em;
+      font-family: var(--font-en);
+    }
+
+    .quote-brand .tag-ar {
+      font-size: 0.72rem;
+      color: #b1aaa1;
+      margin-top: 2px;
+    }
+
+    .legal-strip {
+      margin-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: #faf8f6;
+      border: 1px solid #eee3dc;
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: 0.72rem;
+      color: #5c544b;
+      position: relative;
+      z-index: 1;
+    }
+
+    .legal-strip strong {
+      color: var(--color-primary);
+    }
+
+    .meta-row {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 16px;
+      margin-top: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .client-box {
+      background: #fff8f6;
+      border: 1px solid rgba(232, 76, 43, 0.14);
+      border-inline-end: 4px solid var(--color-primary);
+      border-radius: 12px;
+      padding: 14px;
+      line-height: 1.9;
+    }
+
+    .client-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-bottom: 4px;
+    }
+
+    .label {
+      font-size: 0.76rem;
+      color: #8d847a;
+    }
+
+    .value {
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: #2c2825;
+    }
+
+    .info-box {
+      border: 1px solid #ece5de;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .info-box table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .info-box td {
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      border-bottom: 1px solid #f1ece7;
+    }
+
+    .info-box tr:last-child td {
+      border-bottom: none;
+    }
+
+    .info-box .k {
+      background: #f8f5f2;
+      color: var(--color-primary);
+      font-weight: 800;
+      width: 42%;
+    }
+
+    .info-box .v {
+      font-weight: 700;
+      color: #201a16;
+    }
+
+    .sec-hdr {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 800;
+      padding: 8px 12px;
+      border-radius: 10px 10px 0 0;
+      margin-top: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #ebe3dc;
+      border-top: none;
+      position: relative;
+      z-index: 1;
+    }
+
+    .items-table th {
+      background: #2c2825;
+      color: #fff;
+      padding: 8px 6px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .items-table td {
+      border: 1px solid #efe8e2;
+      padding: 9px 6px;
+      font-size: 0.75rem;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .items-table tr:nth-child(even) td {
+      background: #fcfbfa;
+    }
+
+    .items-table td.desc {
+      text-align: right;
+      line-height: 1.75;
+    }
+
+    .items-table td.code {
+      color: var(--color-primary);
+      font-weight: 900;
+      font-size: 0.7rem;
+    }
+
+    .items-table td.amount {
+      font-weight: 800;
+    }
+
+    /* Optional checkbox interaction styling */
+    .optional-checkbox-cell {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 !important;
+    }
+
+    .optional-checkbox-label {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--color-primary);
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      background: #fff;
+    }
+
+    .optional-checkbox-input {
+      display: none;
+    }
+
+    .optional-checkbox-input:checked + .optional-checkbox-label {
+      background: var(--color-primary);
+      color: #fff;
+    }
+
+    .optional-checkbox-input:checked + .optional-checkbox-label::after {
+      content: "✓";
+      font-weight: 900;
+      font-size: 0.85rem;
+    }
+
+    /* Strikethrough for disabled optional items */
+    .row-disabled {
+      opacity: 0.5;
+      background: #fafaf9 !important;
+    }
+
+    .row-disabled td:not(.optional-checkbox-cell) {
+      text-decoration: line-through;
+      color: var(--color-muted);
+    }
+
+    .totals-wrap {
+      display: flex;
+      justify-content: flex-start;
+      border: 1px solid #ebe3dc;
+      border-top: none;
+      padding: 10px 10px 10px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .totals-table {
+      width: 100%;
+      max-width: 380px;
+      border-collapse: collapse;
+    }
+
+    .totals-table td {
+      padding: 6px 12px;
+      font-size: 0.76rem;
+      border-bottom: 1px solid #f2ece7;
+    }
+
+    .totals-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .totals-table .l {
+      text-align: right;
+      color: #575046;
+      font-weight: 700;
+    }
+
+    .totals-table .r {
+      text-align: left;
+      direction: ltr;
+      font-weight: 800;
+      color: #1b1715;
+    }
+
+    .totals-table .grand-row td {
+      background: var(--color-primary);
+      color: #fff !important;
+      font-weight: 900;
+    }
+
+    .totals-table .grand-row-green td {
+      background: #2e7d4f !important;
+      color: #fff !important;
+      font-weight: 900;
+    }
+
+    .spec-wrap, .terms-wrap, .bank-wrap, .auth-wrap, .quote-product-images {
+      border: 1px solid #ebe3dc;
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+      background: #fff;
+    }
+
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .spec-column-title {
+      background: #36312d;
+      color: #fff;
+      padding: 6px 10px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .spec-cell {
+      border-left: 1px solid #efebe7;
+    }
+
+    .spec-cell table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .spec-cell td {
+      padding: 6px 8px;
+      font-size: 0.72rem;
+      border-bottom: 1px solid #f4f0ed;
+    }
+
+    .spec-cell tr:nth-child(even) td {
+      background: #faf8f6;
+    }
+
+    .spec-cell td:first-child {
+      color: #8a8177;
+      width: 52%;
+    }
+
+    .spec-cell td:last-child {
+      font-weight: 800;
+      color: #1f1a16;
+    }
+
+    .spec-bottom {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: #fff8f6;
+      border-top: 1px solid rgba(232, 76, 43, 0.1);
+    }
+
+    .spec-stat {
+      padding: 10px 6px;
+      text-align: center;
+    }
+
+    .spec-stat .k {
+      font-size: 0.65rem;
+      color: #918980;
+    }
+
+    .spec-stat .v {
+      font-size: 0.9rem;
+      font-weight: 900;
+      color: var(--color-primary);
+      margin-top: 2px;
+    }
+
+    .spec-stat .s {
+      font-size: 0.65rem;
+      color: #b0a8a0;
+      margin-top: 2px;
+    }
+
+    .terms-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .term {
+      display: flex;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid #f1ece8;
+      border-inline-start: 1px solid #f1ece8;
+      background: #fff;
+    }
+
+    .term.full {
+      grid-column: 1 / -1;
+      border-inline-start: none;
+    }
+
+    .term-icon {
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .term-title {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-bottom: 2px;
+    }
+
+    .term-text {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #1d1815;
+      line-height: 1.6;
+    }
+
+    .bank-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .bank-item {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f1ece8;
+      border-inline-start: 1px solid #f1ece8;
+      background: #fff;
+    }
+
+    .bank-item .k {
+      font-size: 0.7rem;
+      color: #93897f;
+    }
+
+    .bank-item .v {
+      font-size: 0.8rem;
+      font-weight: 900;
+      color: #1e1916;
+      margin-top: 2px;
+    }
+
+    .bank-note {
+      padding: 10px 12px;
+      background: #fff8f6;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #5a534b;
+      border-top: 1px solid rgba(232, 76, 43, 0.14);
+    }
+
+    .bank-note strong {
+      color: var(--color-primary);
+    }
+
+    .auth-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .auth-card {
+      padding: 14px;
+      background: #fff;
+    }
+
+    .auth-card:first-child {
+      background: #faf8f6;
+      border-inline-start: 1px solid #f0ebe7;
+    }
+
+    .auth-title {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-bottom: 4px;
+    }
+
+    .auth-name {
+      font-size: 0.88rem;
+      font-weight: 900;
+      color: #171311;
+    }
+
+    .auth-detail {
+      font-size: 0.76rem;
+      color: #5d564e;
+      line-height: 1.8;
+    }
+
+    .sig-line {
+      border-top: 1.5px dashed #b9b0a7;
+      width: 74%;
+      margin-top: 30px;
+      margin-bottom: 6px;
+    }
+
+    .sig-label {
+      font-size: 0.68rem;
+      color: #a59d94;
+    }
+
+    .quote-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-4);
+      align-items: flex-end;
+      border-top: 3px solid var(--color-primary);
+      margin-top: 16px;
+      padding-top: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-brand {
+      font-size: 0.78rem;
+      font-weight: 900;
+      color: var(--color-primary);
+    }
+
+    .footer-legal {
+      font-size: 0.65rem;
+      color: #b1a8a0;
+      margin-top: 2px;
+    }
+
+    .footer-contact {
+      font-size: 0.65rem;
+      color: #c0b7af;
+      text-align: end;
+    }
+
+    .quote-product-images {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .quote-product-images img {
+      flex: 1 1 180px;
+      max-width: calc(33.333% - 8px);
+      height: 220px;
+      object-fit: contain;
+      background: var(--color-surface-2);
+      border-radius: 10px;
+      border: 1px solid #ebe3dc;
+      padding: 6px;
+      box-sizing: border-box;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .quote-product-images img:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .section-hidden {
+      display: none !important;
+    }
+
+    /* Live Client Signature and Approval Panel */
+    .sign-panel {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-5);
+      box-shadow: var(--shadow-lg);
+      margin-top: var(--space-6);
+      border-top: 6px solid var(--color-primary);
+    }
+
+    .sign-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--color-text);
+      margin-bottom: var(--space-2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sign-title-sub {
+      font-size: 0.8rem;
+      color: var(--color-muted);
+      margin-bottom: var(--space-4);
+    }
+
+    .sign-field {
+      margin-bottom: var(--space-4);
+    }
+
+    .sign-field label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--color-text);
+      margin-bottom: 6px;
+    }
+
+    .sign-input {
+      width: 100%;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-2);
+      padding: 0.85rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--color-text);
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .sign-input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 4px var(--color-primary-soft);
+      background: #fff;
+    }
+
+    .canvas-container {
+      position: relative;
+      margin-bottom: var(--space-4);
+    }
+
+    .sig-canvas {
+      width: 100%;
+      height: 180px;
+      background: var(--color-surface-2);
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius-md);
+      touch-action: none;
+      cursor: crosshair;
+      transition: all 0.2s ease;
+    }
+
+    .sig-canvas:focus, .sig-canvas.active {
+      border-color: var(--color-primary);
+      background: #fff;
+    }
+
+    .canvas-hint {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      color: var(--color-faint);
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-align: center;
+      opacity: 0.85;
+      transition: opacity 0.2s ease;
+    }
+
+    .canvas-hint span {
+      display: block;
+      font-size: 0.65rem;
+      margin-top: 4px;
+      font-weight: 400;
+    }
+
+    .sign-actions {
+      display: flex;
+      gap: var(--space-3);
+    }
+
+    .btn {
+      padding: 0.85rem 1.5rem;
+      border-radius: var(--radius-md);
+      font-weight: 800;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      font-family: var(--font-ar);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: #fff;
+      flex: 2;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--color-primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      background: var(--color-faint);
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: var(--color-muted);
+      border: 1px solid var(--color-border);
+      flex: 1;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--color-surface-2);
+      color: var(--color-text);
+    }
+
+    /* Client Signature Preview Rendered State */
+    .client-signature-display {
+      background: var(--color-success-soft);
+      border: 2px solid rgba(40, 125, 73, 0.2);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      text-align: center;
+      margin-top: var(--space-4);
+    }
+
+    .client-signature-display img {
+      max-height: 80px;
+      border-bottom: 2px solid var(--color-success);
+      padding-bottom: 4px;
+    }
+
+    .client-signature-display .meta {
+      font-size: 0.8rem;
+      color: var(--color-success);
+      font-weight: 800;
+    }
+
+    /* Success / Confetti Overlay for Approved Quote */
+    .success-alert {
+      background: var(--color-success-soft);
+      border: 1px solid rgba(40, 125, 73, 0.2);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      text-align: center;
+      margin-bottom: var(--space-5);
+      box-shadow: var(--shadow-sm);
+      display: none; /* Shown dynamically */
+    }
+
+    .success-alert h2 {
+      color: var(--color-success);
+      font-size: 1.35rem;
+      font-weight: 900;
+      margin-bottom: var(--space-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+    }
+
+    .success-alert p {
+      color: #3b6b4e;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    /* Portal Toast Alerts */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: #1f1a16;
+      color: #fff;
+      padding: 0.85rem 1.25rem;
+      border-radius: var(--radius-md);
+      font-size: 0.82rem;
+      font-weight: 700;
+      z-index: 50000;
+      box-shadow: var(--shadow-lg);
+      max-width: 320px;
+      display: none;
+      direction: rtl;
+      font-family: var(--font-ar);
+    }
+    .toast.warn {
+      background: var(--color-primary);
+    }
+
+    /* Error UI State styling */
+    .error-container {
+      text-align: center;
+      padding: 80px 20px;
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      margin-top: var(--space-6);
+    }
+
+    .error-container h1 {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--color-primary);
+      margin-bottom: var(--space-2);
+    }
+
+    .error-container p {
+      font-size: 0.95rem;
+      color: var(--color-muted);
+    }
+
+    /* Responsive Grid System */
+    @media (max-width: 768px) {
+      .meta-row {
+        grid-template-columns: 1fr;
+      }
+      .spec-grid {
+        grid-template-columns: 1fr;
+      }
+      .spec-column-title {
+        border-left: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .spec-cell {
+        border-left: none;
+        border-bottom: 1px solid #efebe7;
+      }
+      .spec-cell:last-child {
+        border-bottom: none;
+      }
+      .spec-bottom {
+        grid-template-columns: 1fr 1fr;
+      }
+      .terms-grid {
+        grid-template-columns: 1fr;
+      }
+      .term {
+        border-inline-start: none;
+      }
+      .bank-grid {
+        grid-template-columns: 1fr;
+      }
+      .bank-item {
+        border-inline-start: none;
+      }
+      .auth-wrap {
+        grid-template-columns: 1fr;
+      }
+      .auth-card:first-child {
+        border-inline-start: none;
+        border-bottom: 1px solid #f0ebe7;
+      }
+      .portal-nav {
+        flex-direction: column;
+        gap: var(--space-3);
+        align-items: stretch;
+        text-align: center;
+      }
+      .portal-brand {
+        justify-content: center;
+      }
+      .status-pill {
+        justify-content: center;
+      }
+      .quote-page {
+        padding: 16px;
+      }
+      .quote-header {
+        flex-direction: column-reverse;
+        align-items: center;
+        text-align: center;
+        gap: var(--space-3);
+      }
+      .quote-brand {
+        text-align: center;
+      }
+      .quote-badge {
+        width: 100%;
+      }
+      .items-table th:nth-child(2), /* code column */
+      .items-table td:nth-child(2) {
+        display: none; /* Hide product codes on small mobile screens to prevent overflow */
+      }
+      .quote-product-images img {
+        max-width: calc(50% - 6px);
+        height: 180px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff !important;
+        padding: 0;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .portal-nav, #signaturePadPanel, .toast, .option-switcher-wrap, .no-print, .sign-actions {
+        display: none !important;
+      }
+      .container {
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .quote-card-shell {
+        border: none !important;
+        box-shadow: none !important;
+        background: none !important;
+        overflow: visible !important;
+      }
+      .quote-page {
+        padding: 8mm 10mm !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        min-height: auto !important;
+        overflow: visible !important;
+      }
+      .totals-wrap, .spec-wrap, .terms-wrap, .bank-wrap, .auth-wrap, .auth-card, .client-box, .info-box, .quote-product-images, #previewImagesSection {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      .quote-product-images, #previewImagesSection {
+        overflow: visible !important;
+      }
+      .quote-product-images img {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        max-height: 220px !important;
+        object-fit: contain !important;
+      }
+      .items-table tr {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+      }
+      .items-table thead {
+        display: table-header-group;
+      }
+      @page {
+        size: A4 portrait;
+        margin: 8mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="portalMainContent">
+    
+    <!-- Toast Message Container -->
+    <div id="portalToast" class="toast"></div>
+
+    <!-- Portal Top Bar -->
+    <nav class="portal-nav">
+      <div class="portal-brand">
+        <div class="portal-logo">Q</div>
+        <div class="portal-title">
+          كيوبيكس السعودية
+          <span>QUBIXSA PORTAL</span>
+        </div>
+      </div>
+      <div>
+        <span class="status-pill sent" id="statusPill">
+          <span>⏳</span> جاري التحميل...
+        </span>
+      </div>
+    </nav>
+
+    <!-- Success Confirmation Header -->
+    <div class="success-alert" id="successBanner">
+      <h2>🎉 تم اعتماد عرض السعر بنجاح!</h2>
+      <p id="successBannerDetails">نشكركم على ثقتكم الغالية. تم استلام التوقيع وإشعار ممثل المبيعات لتجهيز العقد البديل.</p>
+    </div>
+
+    <!-- Comparative Option Switcher Tabs (Shown dynamically) -->
+    <div class="option-switcher-wrap" id="portalOptionSwitcher">
+      <button class="option-tab-btn active" id="tabA" onclick="switchOption('A')">الخيار أ (Option A)</button>
+      <button class="option-tab-btn" id="tabB" onclick="switchOption('B')">الخيار ب (Option B)</button>
+    </div>
+
+    <!-- The Quote Document Card -->
+    <div class="quote-card-shell">
+      <article class="quote-page rtl" id="quoteDocCard">
+        <div class="watermark">عرض سعر</div>
+        
+        <!-- Header -->
+        <div class="quote-header">
+          <div>
+            <div class="quote-badge">عرض سعر</div>
+            <div class="quote-badge-sub">QUOTATION — غير ملزم</div>
+          </div>
+          <div class="quote-brand">
+            <div class="name">QUBIXSA</div>
+            <div class="tag">BUILT TO FIT EVERY SPACE</div>
+            <div class="tag-ar">كيوبيكس السعودية — حلول الشاشات المتكاملة</div>
+          </div>
+        </div>
+
+        <!-- Tax & Legal Strip -->
+        <div class="legal-strip">
+          <span><strong>الرقم الضريبي:</strong> <span id="pvVatNumber">—</span></span>
+          <span><strong>السجل التجاري:</strong> <span id="pvCrNumber">—</span></span>
+          <span><strong>الموقع:</strong> الرياض، المملكة العربية السعودية</span>
+          <span><strong>البريد:</strong> qubixsa1@gmail.com</span>
+        </div>
+
+        <!-- Meta Row: Client Info vs Quote details -->
+        <div class="meta-row">
+          <div class="client-box">
+            <div class="client-title">📋 بيانات العميل</div>
+            <div><span class="label">الاسم / الشركة: </span><span class="value" id="pvClientName">—</span></div>
+            <div id="pvClientRepRow" style="display:none"><span class="label">الممثل: </span><span class="value" id="pvClientRep"></span></div>
+            <div id="pvClientVatRow" style="display:none"><span class="label">الرقم الضريبي: </span><span class="value" id="pvClientVat"></span></div>
+            <div id="pvClientCrRow" style="display:none"><span class="label">السجل التجاري: </span><span class="value" id="pvClientCr"></span></div>
+            <div id="pvClientLocationRow" style="display:none"><span class="label">الموقع: </span><span class="value" id="pvClientLocation"></span></div>
+            <div><span class="label">جوال: </span><span class="value" id="pvClientPhone">—</span></div>
+            <div><span class="label">البريد: </span><span class="value" id="pvClientEmail">—</span></div>
+            <div><span class="label">المشروع: </span><span class="value" id="pvProjectName">—</span></div>
+          </div>
+          <div class="info-box">
+            <table>
+              <tr><td class="k">رقم العرض</td><td class="v" id="pvQuoteNumber">—</td></tr>
+              <tr><td class="k">تاريخ الإصدار</td><td class="v" id="pvIssueDate">—</td></tr>
+              <tr><td class="k">صلاحية العرض</td><td class="v" id="pvValidity">—</td></tr>
+              <tr><td class="k">جوال كيوبيكسا</td><td class="v" dir="ltr">+966 55 630 1055</td></tr>
+              <tr><td class="k">البريد الإلكتروني</td><td class="v" dir="ltr">qubixsa1@gmail.com</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <div id="itemsContainer">
+          <div class="sec-hdr" id="portalItemsHeader">🖥 تفاصيل البنود والأسعار</div>
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th style="width:40px">#</th>
+                <th style="width:112px">كود</th>
+                <th>الوصف</th>
+                <th style="width:65px">الكمية</th>
+                <th style="width:58px">الوحدة</th>
+                <th style="width:112px">سعر الوحدة (<span class="currency-label">ر.س</span>)</th>
+                <th style="width:112px">الإجمالي (<span class="currency-label">ر.س</span>)</th>
+              </tr>
+            </thead>
+            <tbody id="previewItems">
+              <tr><td colspan="7" style="padding:20px; color:var(--color-muted);">جاري تحميل البنود والأسعار...</td></tr>
+            </tbody>
+          </table>
+
+          <div class="totals-wrap">
+            <table class="totals-table">
+              <tr>
+                <td class="l">المجموع قبل الضريبة (<span class="currency-label">ر.س</span>)</td>
+                <td class="r" id="pvSubtotal">0.00</td>
+              </tr>
+              <tr id="pvDiscountRow" style="display:none">
+                <td class="l" id="pvDiscountLabel">خصم</td>
+                <td class="r" id="pvDiscount">0.00</td>
+              </tr>
+              <tr>
+                <td class="l">المجموع بعد الخصم (<span class="currency-label">ر.س</span>)</td>
+                <td class="r" id="pvAfterDiscount">0.00</td>
+              </tr>
+              <tr>
+                <td class="l">ضريبة القيمة المضافة <span id="pvVatRateLabel">15</span>%</td>
+                <td class="r" id="pvVat">0.00</td>
+              </tr>
+              <tr class="grand-row" id="pvGrandRow">
+                <td class="l">🧾 الإجمالي شامل الضريبة (<span class="currency-label">ر.س</span>)</td>
+                <td class="r" id="pvGrand">0.00</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Product Image Attachment -->
+        <div id="previewImagesSection" class="section-hidden">
+          <div class="sec-hdr">📷 صور المنتج</div>
+          <div class="quote-product-images" id="pvProductImages"></div>
+        </div>
+
+        <!-- Technical specs block -->
+        <div id="previewSpecsSection">
+          <div class="sec-hdr">📊 المواصفات الفنية</div>
+          <div class="spec-wrap">
+            <div class="spec-grid">
+              <div class="spec-column-title">وحدة الوحدة (Module)</div>
+              <div class="spec-column-title">اللوحة (Panel / Cabinet)</div>
+              <div class="spec-column-title" style="border-left:none;">الأداء والتشغيل</div>
+              
+              <div class="spec-cell">
+                <table>
+                  <tr><td>بكسل بيتش</td><td id="pvSpecPitch">—</td></tr>
+                  <tr><td>نوع المصباح</td><td id="pvSpecLamp">—</td></tr>
+                  <tr><td>أبعاد الوحدة</td><td id="pvSpecModule">—</td></tr>
+                  <tr><td>دقة الوحدة</td><td id="pvSpecResolution">—</td></tr>
+                  <tr><td>الكثافة</td><td id="pvSpecDensity">—</td></tr>
+                  <tr><td>صيانة أمامية</td><td id="pvSpecMaintenance">—</td></tr>
+                </table>
+              </div>
+              <div class="spec-cell">
+                <table>
+                  <tr><td>أبعاد اللوحة</td><td id="pvSpecPanel">—</td></tr>
+                  <tr><td>عدد الوحدات/لوحة</td><td id="pvSpecModulesCount">—</td></tr>
+                  <tr><td>دقة اللوحة</td><td id="pvSpecPanelRes">—</td></tr>
+                  <tr><td>وزن اللوحة</td><td id="pvSpecWeight">—</td></tr>
+                  <tr><td>المادة</td><td id="pvSpecMaterial">—</td></tr>
+                  <tr><td>نظام التحكم</td><td id="pvSpecControl">—</td></tr>
+                </table>
+              </div>
+              <div class="spec-cell" style="border-left:none;">
+                <table>
+                  <tr><td>السطوع</td><td id="pvSpecBrightness">—</td></tr>
+                  <tr><td>معدل التحديث</td><td id="pvSpecRefresh">—</td></tr>
+                  <tr><td>زاوية الرؤية</td><td id="pvSpecViewing">—</td></tr>
+                  <tr><td>العمر الافتراضي</td><td id="pvSpecLifespan">—</td></tr>
+                  <tr><td>استهلاك متوسط</td><td id="pvSpecPowerAvg">—</td></tr>
+                  <tr><td>استهلاك أقصى</td><td id="pvSpecPowerMax">—</td></tr>
+                </table>
+              </div>
+            </div>
+            <div class="spec-bottom">
+              <div class="spec-stat"><div class="k">المساحة الإجمالية</div><div class="v" id="pvSpecArea">—</div><div class="s" id="pvSpecAreaNote"></div></div>
+              <div class="spec-stat"><div class="k">أقل مسافة مشاهدة</div><div class="v" id="pvSpecMinView">—</div><div class="s" id="pvSpecMinViewNote"></div></div>
+              <div class="spec-stat"><div class="k">معدل الحماية</div><div class="v" id="pvSpecIpRating">—</div><div class="s" id="pvSpecIpNote"></div></div>
+              <div class="spec-stat"><div class="k">تدرج الرمادي</div><div class="v" id="pvSpecGrayscale">—</div><div class="s" id="pvSpecGrayscaleNote"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Terms and conditions block -->
+        <div class="sec-hdr">📄 الشروط والأحكام</div>
+        <div class="terms-wrap">
+          <div class="terms-grid">
+            <div class="term"><div class="term-icon">💳</div><div><div class="term-title">شروط الدفع</div><div class="term-text" id="pvPaymentTerms">—</div></div></div>
+            <div class="term"><div class="term-icon">🚚</div><div><div class="term-title">مدة التوريد</div><div class="term-text" id="pvDeliveryTerms">—</div></div></div>
+            <div class="term"><div class="term-icon">📍</div><div><div class="term-title">موقع التسليم</div><div class="term-text">موقع العميل</div></div></div>
+            <div class="term"><div class="term-icon">🛡️</div><div><div class="term-title">الضمان</div><div class="term-text" id="pvWarrantyTerms">—</div></div></div>
+            <div class="term full"><div class="term-icon">⏱️</div><div><div class="term-title">صلاحية العرض</div><div class="term-text" id="pvValidityText">—</div></div></div>
+          </div>
+        </div>
+
+        <!-- Bank details block -->
+        <div id="previewBankSection">
+          <div class="sec-hdr">🏦 التفاصيل البنكية</div>
+          <div class="bank-wrap">
+            <div class="bank-grid">
+              <div class="bank-item"><div class="k">اسم المستفيد</div><div class="v" id="pvBeneficiary">—</div></div>
+              <div class="bank-item"><div class="k">اسم البنك</div><div class="v" id="pvBankName">—</div></div>
+              <div class="bank-item"><div class="k">رقم الحساب</div><div class="v" id="pvAccount">—</div></div>
+              <div class="bank-item"><div class="k">رقم الآيبان</div><div class="v" id="pvIban">—</div></div>
+              <div class="bank-item"><div class="k">رمز السويفت</div><div class="v" id="pvSwift">—</div></div>
+              <div class="bank-item"><div class="k">العملة</div><div class="v" id="pvBankCurrency">ريال سعودي (SAR)</div></div>
+            </div>
+            <div class="bank-note">⚠️ يرجى ذكر رقم العرض <strong id="pvBankQuoteNumber">—</strong> في حقل الملاحظات عند التحويل البنكي.</div>
+          </div>
+        </div>
+
+        <!-- Signature outputs block -->
+        <div class="sec-hdr">✍️ التفويض والقبول</div>
+        <div class="auth-wrap">
+          <div class="auth-card">
+            <div class="auth-title">✦ صادر عن</div>
+            <div class="auth-name">كيوبيكس السعودية — QUBIXSA</div>
+            <div class="auth-detail" id="pvIssuer">—</div>
+            <div class="auth-detail">+966 55 630 1055</div>
+            <div class="auth-detail">qubixsa1@gmail.com</div>
+            <div class="auth-detail" style="direction:rtl;">الرياض، المملكة العربية السعودية</div>
+            <div class="sig-line"></div>
+            <div class="sig-label">التوقيع والختم الرسمي</div>
+          </div>
+          <div class="auth-card" style="text-align:right;">
+            <div class="auth-title">✦ قبول العميل</div>
+            <div class="auth-name" id="pvClientAcceptance">—</div>
+            <div class="auth-detail" style="direction:rtl;margin-top:12px;">بالتوقيع أدناه، يُقرّ العميل بموافقته على بنود وأسعار هذا العرض وفق الشروط والأحكام المذكورة أعلاه.</div>
+            
+            <div id="portalSigImageContainer" style="display:none;" class="client-signature-display">
+              <img id="portalSigImage" src="" alt="Client Signature">
+              <div class="meta" id="portalSigMeta">تم التوقيع بواسطة: — في —</div>
+            </div>
+            
+            <div id="portalSigPlaceholder" class="sig-line" style="margin-right:0;margin-left:auto;"></div>
+            <div class="sig-label">توقيع العميل وختم الشركة</div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="quote-footer">
+          <div>
+            <div class="footer-brand">QUBIXSA</div>
+            <div class="footer-legal">مؤسسة كيوبيكس السعودية لتقنية المعلومات | الرقم الضريبي 311029272300003</div>
+          </div>
+          <div class="footer-contact">
+            الرياض، المملكة العربية السعودية<br>
+            +966 55 630 1055 | qubixsa1@gmail.com
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- Interactive Client Signature Pad Panel -->
+    <div class="sign-panel" id="signaturePadPanel">
+      <div class="sign-title">
+        <span>✍️</span> تفويض واعتماد عرض السعر
+      </div>
+      <div class="sign-title-sub">
+        بصفتك العميل أو الشخص المفوض، يرجى كتابة اسمك الكامل والتوقيع في الحقل أدناه لاعتماد العرض.
+      </div>
+      
+      <div class="sign-field">
+        <label for="signerNameInput">اسم الشخص المفوض بالتوقيع / Signer's Name *</label>
+        <input type="text" class="sign-input" id="signerNameInput" placeholder="أدخل اسمك الكامل هنا..." autocomplete="off">
+      </div>
+
+      <div class="sign-field">
+        <label>التوقيع الإلكتروني / E-Signature *</label>
+        <div class="canvas-container">
+          <canvas class="sig-canvas" id="sigCanvas"></canvas>
+          <div class="canvas-hint" id="canvasHint">
+            وقع هنا باستخدام إصبعك أو الماوس
+            <span>Sign here using your finger or mouse</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sign-actions">
+        <button class="btn btn-secondary" id="clearSigBtn" onclick="clearSignature()">مسح التوقيع / Clear</button>
+        <button class="btn btn-primary" id="approveSigBtn" onclick="submitSignature()">اعتماد العرض والتوقيع / Approve & Sign</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── Supabase Configuration ──
+    const SUPABASE_URL = 'https://ylmalaszyhltwklqfhhs.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbWFsYXN6eWhsdHdrbHFmaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDY4ODUsImV4cCI6MjA5MDUyMjg4NX0.tDT94RNca_XliAZhqbAKWcam9m1NSjkR3ftZUznL3ts';
+    
+    let supabase = null;
+    let quoteRecord = null;
+    let currentOption = 'A'; // 'A' or 'B'
+    let excludedItems = { A: new Set(), B: new Set() }; // Tracks indices of disabled optional items
+
+    // Initialize Supabase Client
+    try {
+      if (window.supabase && window.supabase.createClient) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch (e) {
+      console.error('Supabase initialization failed:', e);
+    }
+
+    // Toast helpers
+    function showToast(msg, warn = false) {
+      const toast = document.getElementById('portalToast');
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.classList.toggle('warn', warn);
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 3500);
+    }
+
+    // Money formatter
+    function formatMoney(amount) {
+      if (amount === undefined || amount === null || isNaN(amount)) return '0.00';
+      return parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function emptyFallback(val) {
+      return (val && val.trim()) ? val : '<span class="muted-empty">—</span>';
+    }
+
+    // ── Document Loading Logic ──
+    document.addEventListener('DOMContentLoaded', () => {
+      loadQuoteData();
+      initSignaturePad();
+    });
+
+    async function loadQuoteData() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const quoteNum = urlParams.get('q');
+      
+      if (!quoteNum) {
+        renderErrorState('عذراً، لم يتم العثور على معرّف عرض السعر في الرابط.', 'Invalid URL: Missing quote code parameter (?q=)');
+        return;
+      }
+
+      if (!supabase) {
+        renderErrorState('فشل الاتصال بقاعدة البيانات. الرجاء إعادة المحاولة.', 'Database connection failure');
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('quotes')
+          .select('*')
+          .eq('quote_number', quoteNum)
+          .single();
+
+        if (error || !data) {
+          console.error(error);
+          renderErrorState('عذراً، لم يتم العثور على عرض السعر المطلوب في قاعدة البيانات.', `Quote ${quoteNum} not found. Please verify details.`);
+          return;
+        }
+
+        quoteRecord = data;
+        const payload = data.payload;
+
+        // Trigger 'viewed' update if quote status is 'sent'
+        if (data.status === 'sent') {
+          await supabase
+            .from('quotes')
+            .update({ status: 'viewed', viewed_at: new Date().toISOString() })
+            .eq('id', data.id);
+          
+          quoteRecord.status = 'viewed';
+          // Trigger Webhook on viewed
+          triggerWebhook('viewed', data.quote_number, data.client_name, 'Client viewed the quote page.');
+        }
+
+        // Render the quote views
+        renderQuote(payload);
+        updateStatusPill(quoteRecord.status, quoteRecord.signed_at, quoteRecord.signed_by);
+
+      } catch (err) {
+        console.error(err);
+        renderErrorState('حدث خطأ أثناء تحميل تفاصيل عرض السعر.', err.message);
+      }
+    }
+
+    function renderErrorState(titleAr, descEn) {
+      const container = document.getElementById('portalMainContent');
+      container.innerHTML = `
+        <div class="error-container">
+          <h1>⚠️ ${titleAr}</h1>
+          <p>${descEn}</p>
+        </div>
+      `;
+    }
+
+    function updateStatusPill(status, signedAt, signedBy) {
+      const pill = document.getElementById('statusPill');
+      if (!pill) return;
+      
+      pill.className = 'status-pill ' + status;
+      
+      if (status === 'sent') {
+        pill.innerHTML = '<span>🌐</span> ساري / Active';
+      } else if (status === 'viewed') {
+        pill.innerHTML = '<span>👁️</span> تمت مشاهدته / Opened';
+      } else if (status === 'approved') {
+        pill.innerHTML = '<span>✅</span> تم الاعتماد / Approved';
+        
+        // Hide signature input panel & show completed signed details
+        document.getElementById('signaturePadPanel').style.display = 'none';
+        document.getElementById('successBanner').style.display = 'block';
+        if (signedAt && signedBy) {
+          const dateStr = new Date(signedAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+          document.getElementById('successBannerDetails').innerHTML = `تم اعتماد وتوقيع عرض السعر بواسطة <strong>${signedBy}</strong> في تاريخ <strong>${dateStr}</strong>.`;
+        }
+      }
+    }
+
+    // Trigger Notification Webhook
+    function triggerWebhook(eventType, quoteNumber, clientName, details) {
+      if (!quoteRecord || !quoteRecord.webhook_url) return;
+      
+      fetch(quoteRecord.webhook_url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: eventType, // 'viewed' | 'approved'
+          quote_number: quoteNumber,
+          client_name: clientName,
+          timestamp: new Date().toISOString(),
+          details: details
+        })
+      })
+      .then(res => {
+        if (!res.ok) console.warn('Webhook response status error:', res.status);
+      })
+      .catch(err => {
+        console.warn('Webhook fetch delivery failed:', err);
+      });
+    }
+
+    // ── Render Quote UI Fields ──
+    function renderQuote(payload) {
+      const data = payload.data || {};
+      
+      // Client Info
+      document.getElementById('pvClientName').innerHTML = emptyFallback(data.clientName);
+      
+      // Representitive details logic
+      ['ClientRep', 'ClientVat', 'ClientCr', 'ClientLocation'].forEach(field => {
+        const val = data['c' + field.slice(1)];
+        const row = document.getElementById('pv' + field + 'Row');
+        const displayVal = document.getElementById('pv' + field);
+        if (row && displayVal) {
+          if (val && val.trim()) {
+            row.style.display = '';
+            displayVal.innerHTML = val;
+          } else {
+            row.style.display = 'none';
+          }
+        }
+      });
+
+      document.getElementById('pvClientPhone').innerHTML = emptyFallback(data.clientPhone);
+      document.getElementById('pvClientEmail').innerHTML = emptyFallback(data.clientEmail);
+      document.getElementById('pvProjectName').innerHTML = emptyFallback(data.projectName);
+      document.getElementById('pvQuoteNumber').textContent = data.quoteNumber || '—';
+      document.getElementById('pvIssueDate').textContent = data.issueDate || '—';
+      document.getElementById('pvVatNumber').innerHTML = emptyFallback(data.vatNumber);
+      document.getElementById('pvCrNumber').innerHTML = emptyFallback(data.crNumber);
+      
+      const vDays = data.validityDays || '10';
+      document.getElementById('pvValidity').textContent = `⏱ ${vDays} أيام عمل`;
+      document.getElementById('pvValidityText').innerHTML =
+        `هذا العرض ساري لمدة <strong>${vDays} أيام عمل</strong> من تاريخ الإصدار. يُعدّ أي تأخر في القبول إلغاءً ضمنياً للعرض.`;
+        
+      document.getElementById('pvVatRateLabel').textContent = data.vatRate || '15';
+      document.getElementById('pvPaymentTerms').textContent = data.paymentTerms || '—';
+      document.getElementById('pvDeliveryTerms').textContent = data.deliveryTerms || '—';
+      document.getElementById('pvWarrantyTerms').textContent = data.warrantyTerms || '—';
+      document.getElementById('pvBeneficiary').textContent = data.beneficiary || '—';
+      document.getElementById('pvBankName').textContent = data.bankName || '—';
+      document.getElementById('pvAccount').textContent = data.accountNumber || '—';
+      document.getElementById('pvIban').textContent = data.iban || '—';
+      document.getElementById('pvSwift').textContent = data.swift || '—';
+      document.getElementById('pvBankQuoteNumber').textContent = data.quoteNumber || '—';
+      document.getElementById('pvIssuer').textContent = data.issuerName || '—';
+      document.getElementById('pvClientAcceptance').innerHTML = emptyFallback(data.clientName);
+
+      // Check for product image attachment
+      const imgSection = document.getElementById('previewImagesSection');
+      const imgContainer = document.getElementById('pvProductImages');
+      const urls = payload.imageDataUrls || [];
+      
+      if (payload.toggles && payload.toggles.images && urls.length > 0) {
+        imgSection.classList.remove('section-hidden');
+        imgContainer.innerHTML = urls.map(url => `<img src="${url}" alt="Attachment">`).join('');
+      } else {
+        imgSection.classList.add('section-hidden');
+      }
+
+      // Prepopulate technical specifications
+      ['Pitch','Lamp','Module','Resolution','Density','Maintenance','Panel','ModulesCount','PanelRes','Weight','Material','Control','Brightness','Refresh','Viewing','Lifespan','PowerAvg','PowerMax','Area','AreaNote','MinView','MinViewNote','IpRating','IpNote','Grayscale','GrayscaleNote'].forEach(k => {
+        const el = document.getElementById('pvSpec' + k);
+        if (el) el.textContent = data['spec' + k] || '—';
+      });
+
+      // Show hide sections according to database toggles
+      const specsSection = document.getElementById('previewSpecsSection');
+      const bankSection = document.getElementById('previewBankSection');
+      
+      if (payload.toggles) {
+        if (specsSection) specsSection.classList.toggle('section-hidden', payload.toggles.specs === false);
+        if (bankSection) bankSection.classList.toggle('section-hidden', payload.toggles.bank === false);
+      }
+
+      // Check if Option B is active (Comparison mode)
+      const switcher = document.getElementById('portalOptionSwitcher');
+      if (payload.isComparison && payload.itemsB && payload.itemsB.length > 0) {
+        switcher.style.display = 'flex';
+      } else {
+        switcher.style.display = 'none';
+      }
+
+      // Render the current selected option items
+      renderOptionItems();
+
+      // Renders Client Signature details if already approved
+      if (quoteRecord.status === 'approved') {
+        renderApprovedSignature();
+      }
+    }
+
+    function renderApprovedSignature() {
+      const placeholder = document.getElementById('portalSigPlaceholder');
+      const displayContainer = document.getElementById('portalSigImageContainer');
+      const img = document.getElementById('portalSigImage');
+      const meta = document.getElementById('portalSigMeta');
+      
+      if (placeholder && displayContainer && img && quoteRecord.signature_base64) {
+        placeholder.style.display = 'none';
+        displayContainer.style.display = 'flex';
+        img.src = quoteRecord.signature_base64;
+        
+        const dateStr = new Date(quoteRecord.signed_at).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        meta.innerHTML = `تم التوقيع بواسطة: <strong>${quoteRecord.signed_by}</strong><br>في: ${dateStr}`;
+      }
+    }
+
+    // ── Optional and Pricing Live Recalculations ──
+    function renderOptionItems() {
+      if (!quoteRecord) return;
+      const payload = quoteRecord.payload;
+      const items = (currentOption === 'A') ? (payload.items || []) : (payload.itemsB || []);
+      const isUsd = (payload.data && payload.data.currency === 'USD');
+      const symbol = isUsd ? 'USD' : 'SAR';
+      
+      // Update currency labels
+      document.querySelectorAll('.currency-label').forEach(el => el.textContent = symbol);
+      
+      const tbody = document.getElementById('previewItems');
+      tbody.innerHTML = '';
+      
+      if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="padding:20px; color:var(--color-muted);">لا توجد بنود متاحة في هذا الخيار.</td></tr>`;
+        recalculateTotals();
+        return;
+      }
+
+      items.forEach((item, idx) => {
+        // Safe check for total calculation
+        const total = item.qty * item.price;
+        item.total = total; // bind back for safety
+        
+        // Detect if item is marked optional: contains (optional), (اختياري), [optional], or [اختياري]
+        const textToSearch = ((item.desc || '') + ' ' + (item.code || '')).toLowerCase();
+        const isOptional = textToSearch.includes('optional') || textToSearch.includes('اختياري');
+        
+        const tr = document.createElement('tr');
+        tr.id = `item-row-${idx}`;
+        
+        // Initial state
+        const isExcluded = excludedItems[currentOption].has(idx);
+        if (isExcluded) {
+          tr.classList.add('row-disabled');
+        }
+
+        // Render standard fields
+        let indexCol = `<td>${idx + 1}</td>`;
+        if (isOptional && quoteRecord.status !== 'approved') {
+          // Render interactive checkbox
+          indexCol = `
+            <td class="optional-checkbox-cell">
+              <input type="checkbox" id="opt-chk-${idx}" class="optional-checkbox-input" ${isExcluded ? '' : 'checked'} onchange="toggleOptionalItem(${idx})">
+              <label for="opt-chk-${idx}" class="optional-checkbox-label" title="بند اختياري - انقر للإضافة أو الحذف"></label>
+            </td>
+          `;
+        }
+
+        tr.innerHTML = `
+          ${indexCol}
+          <td class="code">${item.code || '—'}</td>
+          <td class="desc">
+            ${item.desc ? item.desc.replace(/\n/g, '<br>') : '—'}
+            ${isOptional ? ' <span style="font-size:0.68rem; font-weight:800; background:var(--color-primary-soft); color:var(--color-primary); padding:2px 6px; border-radius:4px; margin-inline-start:4px;">بند اختياري / Optional</span>' : ''}
+          </td>
+          <td>${item.qty || 0}</td>
+          <td>${item.unit || '—'}</td>
+          <td class="amount">${formatMoney(item.price)}</td>
+          <td class="amount" id="item-total-${idx}">${isExcluded ? '0.00' : formatMoney(item.total)}</td>
+        `;
+        
+        tbody.appendChild(tr);
+      });
+
+      recalculateTotals();
+    }
+
+    function toggleOptionalItem(idx) {
+      const isChecked = document.getElementById(`opt-chk-${idx}`).checked;
+      const row = document.getElementById(`item-row-${idx}`);
+      const amountVal = document.getElementById(`item-total-${idx}`);
+      
+      const payload = quoteRecord.payload;
+      const items = (currentOption === 'A') ? (payload.items || []) : (payload.itemsB || []);
+      const item = items[idx];
+
+      if (isChecked) {
+        excludedItems[currentOption].delete(idx);
+        row.classList.remove('row-disabled');
+        amountVal.textContent = formatMoney(item.qty * item.price);
+        showToast('تمت إضافة البند الاختياري للإجمالي.');
+      } else {
+        excludedItems[currentOption].add(idx);
+        row.classList.add('row-disabled');
+        amountVal.textContent = '0.00';
+        showToast('تم استبعاد البند الاختياري من الإجمالي.');
+      }
+
+      recalculateTotals();
+    }
+
+    function recalculateTotals() {
+      if (!quoteRecord) return;
+      const payload = quoteRecord.payload;
+      const items = (currentOption === 'A') ? (payload.items || []) : (payload.itemsB || []);
+      const data = payload.data || {};
+
+      // Filter out disabled optional items
+      const activeItems = items.filter((item, idx) => !excludedItems[currentOption].has(idx));
+      
+      // Recalc subtotal
+      const subtotal = activeItems.reduce((sum, item) => sum + (item.qty * item.price), 0);
+      
+      // Recalc discount
+      let discount = 0;
+      const dType = data.discountType || 'none';
+      const dVal = parseFloat(data.discountValue || 0);
+      if (dType === 'percent') discount = subtotal * (dVal / 100);
+      if (dType === 'fixed') discount = dVal;
+      discount = Math.min(discount, subtotal);
+      
+      const afterDiscount = subtotal - discount;
+      const vatRate = parseFloat(data.vatRate || 15) / 100;
+      const vat = afterDiscount * vatRate;
+      const grand = afterDiscount + vat;
+
+      // Update Preview Labels
+      document.getElementById('pvSubtotal').textContent = formatMoney(subtotal);
+      document.getElementById('pvAfterDiscount').textContent = formatMoney(afterDiscount);
+      document.getElementById('pvVat').textContent = formatMoney(vat);
+      document.getElementById('pvGrand').textContent = formatMoney(grand);
+
+      const discRow = document.getElementById('pvDiscountRow');
+      if (discount > 0) {
+        discRow.style.display = '';
+        const label = dType === 'percent' ? `خصم (${dVal}%)` : 'خصم (مبلغ ثابت)';
+        document.getElementById('pvDiscountLabel').textContent = label;
+        document.getElementById('pvDiscount').textContent = '− ' + formatMoney(discount);
+      } else {
+        discRow.style.display = 'none';
+      }
+    }
+
+    function switchOption(opt) {
+      if (opt === currentOption) return;
+      
+      currentOption = opt;
+      document.getElementById('tabA').classList.toggle('active', opt === 'A');
+      document.getElementById('tabB').classList.toggle('active', opt === 'B');
+      
+      // Update UI headings or table border colors depending on choice
+      const header = document.getElementById('portalItemsHeader');
+      const tableRow = document.getElementById('pvGrandRow');
+      
+      if (opt === 'A') {
+        header.textContent = '🖥 تفاصيل البنود والأسعار — الخيار أ';
+        header.style.background = 'var(--color-primary)';
+      } else {
+        header.textContent = '🖥 تفاصيل البنود والأسعار — الخيار ب';
+        header.style.background = 'var(--color-success)';
+      }
+
+      renderOptionItems();
+    }
+
+    // ── Signature Pad HTML5 Canvas Interaction Logic ──
+    let canvas = null;
+    let ctx = null;
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    let strokeCount = 0;
+
+    function initSignaturePad() {
+      canvas = document.getElementById('sigCanvas');
+      if (!canvas) return;
+      ctx = canvas.getContext('2d');
+      
+      // Handle canvas responsiveness
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      ctx.strokeStyle = '#1d1916';
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      // Mouse Listeners
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseleave', stopDrawing);
+
+      // Touch Listeners (prevent touch scrolling on canvas)
+      canvas.addEventListener('touchstart', startDrawingTouch, { passive: false });
+      canvas.addEventListener('touchmove', drawTouch, { passive: false });
+      canvas.addEventListener('touchend', stopDrawing);
+    }
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      // Only resize and clear if size is structurally different to prevent clear-loop on mobile zoom
+      if (canvas.width !== rect.width || canvas.height !== rect.height) {
+        // Save current canvas context drawing if needed, but since it's local clearing is fine
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        ctx.strokeStyle = '#1d1916';
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        strokeCount = 0;
+        document.getElementById('canvasHint').style.opacity = '0.85';
+      }
+    }
+
+    function getCoords(e) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
+
+    function getCoordsTouch(e) {
+      if (e.touches.length === 0) return { x: 0, y: 0 };
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top
+      };
+    }
+
+    function startDrawing(e) {
+      isDrawing = true;
+      const coords = getCoords(e);
+      lastX = coords.x;
+      lastY = coords.y;
+      strokeCount++;
+      document.getElementById('canvasHint').style.opacity = '0';
+    }
+
+    function startDrawingTouch(e) {
+      e.preventDefault();
+      isDrawing = true;
+      const coords = getCoordsTouch(e);
+      lastX = coords.x;
+      lastY = coords.y;
+      strokeCount++;
+      document.getElementById('canvasHint').style.opacity = '0';
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      const coords = getCoords(e);
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(coords.x, coords.y);
+      ctx.stroke();
+      lastX = coords.x;
+      lastY = coords.y;
+    }
+
+    function drawTouch(e) {
+      e.preventDefault();
+      if (!isDrawing) return;
+      const coords = getCoordsTouch(e);
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(coords.x, coords.y);
+      ctx.stroke();
+      lastX = coords.x;
+      lastY = coords.y;
+    }
+
+    function stopDrawing() {
+      isDrawing = false;
+    }
+
+    function clearSignature() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      strokeCount = 0;
+      document.getElementById('canvasHint').style.opacity = '0.85';
+      showToast('تم مسح لوحة التوقيع.');
+    }
+
+    // ── Signature Submission ──
+    async function submitSignature() {
+      if (!quoteRecord) return;
+      
+      const signerName = document.getElementById('signerNameInput').value.trim();
+      if (!signerName) {
+        showToast('يرجى إدخال اسم الشخص المفوض بالتوقيع أولاً.', true);
+        document.getElementById('signerNameInput').focus();
+        return;
+      }
+
+      if (strokeCount < 4) {
+        showToast('يرجى التوقيع في لوحة التوقيع أولاً.', true);
+        return;
+      }
+
+      const approveBtn = document.getElementById('approveSigBtn');
+      const clearBtn = document.getElementById('clearSigBtn');
+      approveBtn.disabled = true;
+      clearBtn.disabled = true;
+      approveBtn.textContent = 'جاري الحفظ والاعتماد...';
+
+      try {
+        const signatureBase64 = canvas.toDataURL('image/png');
+        const signedAt = new Date().toISOString();
+
+        // Include interactive optional changes in the updated quote database record payload 
+        // to ensure we capture which items the client accepted/rejected
+        const updatedPayload = JSON.parse(JSON.stringify(quoteRecord.payload));
+        
+        // Save the chosen state Option A or Option B into the payload
+        updatedPayload.selectedOption = currentOption;
+        updatedPayload.excludedItems = {
+          A: Array.from(excludedItems.A),
+          B: Array.from(excludedItems.B)
+        };
+
+        // Recalculate final totals based on client selection
+        const items = (currentOption === 'A') ? (updatedPayload.items || []) : (updatedPayload.itemsB || []);
+        const activeItems = items.filter((item, idx) => !excludedItems[currentOption].has(idx));
+        
+        const subtotal = activeItems.reduce((sum, item) => sum + (item.qty * item.price), 0);
+        let discount = 0;
+        const dType = updatedPayload.data.discountType || 'none';
+        const dVal = parseFloat(updatedPayload.data.discountValue || 0);
+        if (dType === 'percent') discount = subtotal * (dVal / 100);
+        if (dType === 'fixed') discount = dVal;
+        discount = Math.min(discount, subtotal);
+        
+        const afterDiscount = subtotal - discount;
+        const vatRate = parseFloat(updatedPayload.data.vatRate || 15) / 100;
+        const vat = afterDiscount * vatRate;
+        const grand = afterDiscount + vat;
+
+        const totalCost = activeItems.reduce((sum, item) => sum + (item.qty * (item.cost || 0)), 0);
+        const profit = subtotal - totalCost;
+        const marginPercent = subtotal > 0 ? (profit / subtotal) * 100 : 0;
+
+        const { data, error } = await supabase
+          .from('quotes')
+          .update({
+            status: 'approved',
+            signature_base64: signatureBase64,
+            signed_at: signedAt,
+            signed_by: signerName,
+            payload: updatedPayload,
+            total_price: grand,
+            total_cost: totalCost,
+            margin_percent: marginPercent
+          })
+          .eq('id', quoteRecord.id);
+
+        if (error) {
+          console.error(error);
+          showToast(`فشل اعتماد العرض: ${error.message}`, true);
+          approveBtn.disabled = false;
+          clearBtn.disabled = false;
+          approveBtn.textContent = 'اعتماد العرض والتوقيع / Approve & Sign';
+        } else {
+          // Confetti celebration animation
+          confetti({
+            particleCount: 150,
+            spread: 80,
+            origin: { y: 0.6 }
+          });
+
+          showToast('تم اعتماد وتوقيع عرض السعر بنجاح!');
+          
+          // Re-fetch or update local quoteRecord values
+          quoteRecord.status = 'approved';
+          quoteRecord.signature_base64 = signatureBase64;
+          quoteRecord.signed_at = signedAt;
+          quoteRecord.signed_by = signerName;
+
+          // Update Status pill & Client signature card preview
+          updateStatusPill('approved', signedAt, signerName);
+          renderApprovedSignature();
+          
+          // Trigger Webhook Notification on signed
+          triggerWebhook('approved', quoteRecord.quote_number, quoteRecord.client_name, `Quote signed & accepted by ${signerName}. Chosen option: ${currentOption}.`);
+        }
+
+      } catch (err) {
+        console.error(err);
+        showToast(`حدث خطأ أثناء الاتصال بالخادم: ${err.message}`, true);
+        approveBtn.disabled = false;
+        clearBtn.disabled = false;
+        approveBtn.textContent = 'اعتماد العرض والتوقيع / Approve & Sign';
+      }
+    }
+  </script>
+</body>
+</html>
