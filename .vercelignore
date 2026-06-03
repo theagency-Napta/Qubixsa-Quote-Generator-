@@ -1,0 +1,17 @@
+# Exclude administrative panels and design editors
+admin.html
+generator.html
+
+# Exclude historical files
+legacy/
+
+# Exclude developer test suites and scripts
+scripts/
+package.json
+package-lock.json
+node_modules/
+.ai-instructions.md
+database_migration.sql
+task.md
+implementation_plan.md
+walkthrough.md

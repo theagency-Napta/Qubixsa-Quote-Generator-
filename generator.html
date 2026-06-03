@@ -1074,6 +1074,7 @@
     // ── Supabase CRM & Catalog Configuration ──
     const SUPABASE_URL = 'https://ylmalaszyhltwklqfhhs.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbWFsYXN6eWhsdHdrbHFmaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDY4ODUsImV4cCI6MjA5MDUyMjg4NX0.tDT94RNca_XliAZhqbAKWcam9m1NSjkR3ftZUznL3ts';
+    const PRODUCTION_PORTAL_URL = 'https://your-vercel-domain.com'; // Change this to your deployed Vercel domain name
     let supabaseClient = null;
     let productsDb = [];
 
@@ -1756,9 +1757,16 @@
           console.error('Database publish error:', error);
           showToast(`Publish failed: ${error.message}. Did you run the SQL migration schema in Supabase?`, true);
         } else {
-          // Construct portal url dynamically pointing to portal.html in same path
-          const currentUrl = window.location.href;
-          const portalUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/')) + '/portal.html?q=' + encodeURIComponent(quoteNum);
+          // Construct portal url pointing to the public Vercel domain with local fallback
+          let baseUrl = PRODUCTION_PORTAL_URL;
+          if (!baseUrl || baseUrl === 'https://your-vercel-domain.com') {
+            if (window.location.protocol.startsWith('http')) {
+              baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+            } else {
+              baseUrl = 'https://your-vercel-domain.com';
+            }
+          }
+          const portalUrl = baseUrl + '/portal.html?q=' + encodeURIComponent(quoteNum);
           
           document.getElementById('publishedUrlInput').value = portalUrl;
           document.getElementById('publishModal').classList.add('active');

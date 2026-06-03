@@ -756,6 +756,7 @@
     // ── Supabase Credentials ──
     const SUPABASE_URL = 'https://ylmalaszyhltwklqfhhs.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbWFsYXN6eWhsdHdrbHFmaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDY4ODUsImV4cCI6MjA5MDUyMjg4NX0.tDT94RNca_XliAZhqbAKWcam9m1NSjkR3ftZUznL3ts';
+    const PRODUCTION_PORTAL_URL = 'https://your-vercel-domain.com'; // Change this to your deployed Vercel domain name
 
     let supabase = null;
     let quotesDb = [];
@@ -1064,15 +1065,25 @@
     }
 
     // Portal Actions Helper
+    function getPortalUrl(quoteNum) {
+      let baseUrl = PRODUCTION_PORTAL_URL;
+      if (!baseUrl || baseUrl === 'https://your-vercel-domain.com') {
+        if (window.location.protocol.startsWith('http')) {
+          baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+        } else {
+          baseUrl = 'https://your-vercel-domain.com';
+        }
+      }
+      return baseUrl + '/portal.html?q=' + encodeURIComponent(quoteNum);
+    }
+
     function openPortalLink(quoteNum) {
-      const currentUrl = window.location.href;
-      const portalUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/')) + '/portal.html?q=' + encodeURIComponent(quoteNum);
+      const portalUrl = getPortalUrl(quoteNum);
       window.open(portalUrl, '_blank');
     }
 
     function copyPortalLink(quoteNum) {
-      const currentUrl = window.location.href;
-      const portalUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/')) + '/portal.html?q=' + encodeURIComponent(quoteNum);
+      const portalUrl = getPortalUrl(quoteNum);
       navigator.clipboard.writeText(portalUrl)
         .then(() => showToast('تم نسخ الرابط المباشر للعميل بنجاح!'))
         .catch(() => showToast('فشل نسخ الرابط.', true));
