@@ -1473,7 +1473,7 @@
     const SUPABASE_URL = 'https://ylmalaszyhltwklqfhhs.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsbWFsYXN6eWhsdHdrbHFmaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDY4ODUsImV4cCI6MjA5MDUyMjg4NX0.tDT94RNca_XliAZhqbAKWcam9m1NSjkR3ftZUznL3ts';
     
-    let supabase = null;
+    let supabaseClient = null;
     let quoteRecord = null;
     let currentOption = 'A'; // 'A' or 'B'
     let excludedItems = { A: new Set(), B: new Set() }; // Tracks indices of disabled optional items
@@ -1481,7 +1481,7 @@
     // Initialize Supabase Client
     try {
       if (window.supabase && window.supabase.createClient) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       }
     } catch (e) {
       console.error('Supabase initialization failed:', e);
@@ -1515,20 +1515,20 @@
 
     async function loadQuoteData() {
       const urlParams = new URLSearchParams(window.location.search);
-      const quoteNum = urlParams.get('q');
+      const quoteNum = urlParams.get('q') ? urlParams.get('q').trim().toUpperCase() : null;
       
       if (!quoteNum) {
         renderErrorState('عذراً، لم يتم العثور على معرّف عرض السعر في الرابط.', 'Invalid URL: Missing quote code parameter (?q=)');
         return;
       }
 
-      if (!supabase) {
+      if (!supabaseClient) {
         renderErrorState('فشل الاتصال بقاعدة البيانات. الرجاء إعادة المحاولة.', 'Database connection failure');
         return;
       }
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .rpc('get_quote_by_number', { q_number: quoteNum });
 
         const quote = (data && data.length > 0) ? data[0] : null;
@@ -1544,7 +1544,7 @@
 
         // Trigger 'viewed' update if quote status is 'sent'
         if (quote.status === 'sent') {
-          await supabase
+          await supabaseClient
             .rpc('view_quote_by_number', { q_number: quoteNum });
           
           quoteRecord.status = 'viewed';
@@ -2061,7 +2061,7 @@
         const profit = subtotal - totalCost;
         const marginPercent = subtotal > 0 ? (profit / subtotal) * 100 : 0;
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .rpc('approve_and_sign_quote', {
             q_id: quoteRecord.id,
             q_signer: signerName,

@@ -33,7 +33,7 @@ as $$
 begin
   return query
   select * from public.quotes
-  where quote_number = q_number;
+  where upper(quote_number) = upper(trim(q_number));
 end;
 $$;
 
@@ -46,7 +46,7 @@ as $$
 begin
   update public.quotes
   set status = 'viewed', viewed_at = now()
-  where quote_number = q_number and status = 'sent';
+  where upper(quote_number) = upper(trim(q_number)) and status = 'sent';
 end;
 $$;
 
